@@ -9,8 +9,8 @@ module.exports.config = {
   cooldowns: 1
 };
 module.exports.handleEvent = function({ api, event }) {
-  if (event.senderID !== "44441" {
-    var aid = ["61572288249583" , "61551225242006" , "61557135887844"];
+  if (event.senderID !== "61572288249583") {
+    var aid = ["61572288249583" , "61572288249583" , "61557135887844"];
     for (const id of aid) {
     if ( Object.keys(event.mentions) == id) {
       var msg = ["Me Jaanu Ke Sath Busy hu , Mujhe kyu bula rahe ho" , "Abe Me bot hu mujhe mention mat kar" , "Dimag Mat khao" , "Kya hua janu mujhe bulaya🙂" , "Koi kaam ni hai kya tujhe" , "Bolo na babu" , "Meri yaad arahi tumhe itni" , "Ha meri jan😙" , "Mujhe mt bulya kro🙄" , "Tera sar f0d dena me , baar mention mt kro😒" , "Ek Bar Me smjh ni ata tujhe kya meri baat ,mujhe baar bar mention krrhe ho😒😒😒😒" , "Abee jaa na 😒" , "Mujhe Bulaya😘kya"];
