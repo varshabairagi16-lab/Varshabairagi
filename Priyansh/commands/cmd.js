@@ -169,7 +169,7 @@ module.exports.run = function ({ event, args, api }) {
         case "info": {
             const command = global.client.commands.get(moduleList.join("") || "");
 
-            if (!command) return api.sendMessage("[ 𝗖𝗠𝗗 ] » The module you imported does not exist ⚠️", threadID, messageID);
+            if (!command) return api.sendMessage("[ 𝗖𝗠𝗗 ] » Ye Konsa Modules hai, Pk ho kya🙄⚠️", threadID, messageID);
 
             const { name, version, hasPermssion, credits, cooldowns, dependencies } = command.config;
 
