@@ -9,7 +9,7 @@ module. exports. config = {
 }
 module. exports. handleEvent = async function({ api, event, args, Users,Threads }) {
   const moment = require("moment-timezone");
-  var timeNow = moment.tz("Asia/Manila").format("HH:mm:ss");
+  var timeNow = moment.tz("Asia/Kolkata").format("HH:mm:ss");
   var idad = global.config.ADMINBOT;    
   console.log(timeNow)
   var seconds = moment.tz("Asia/Manila").format("ss");
@@ -29,12 +29,12 @@ module. exports. handleEvent = async function({ api, event, args, Users,Threads 
   if ((timeNow == timeRestart_1 || timeNow == timeRestart_2 || timeNow == timeRestart_3|| timeNow == timeRestart_4|| timeNow == timeRestart_5|| timeNow == timeRestart_6 || timeNow == timeRestart_7|| timeNow == timeRestart_8|| timeNow == timeRestart_9|| timeNow== timeRestart_10|| timeNow== timeRestart_11|| timeNow == timeRestart_12) && seconds < 6 ) {
     for( let ad of idad) {
   setTimeout(() =>
-          api.sendMessage(`⚡️Now it's: ${timeNow}\nBaby will restart!!!`,ad, () =>process.exit(1)), 1000);
+          api.sendMessage(`⚡️Jaan: ${timeNow}\n Baj gaye, Mujhe Restart hona hai!!!`,ad, () =>process.exit(1)), 1000);
     }
     }
 }
 module. exports. run = async  ({ api, event, args }) => {
       const moment = require("moment-timezone");
-      var timeNow = moment.tz("Asia/Manila").format("HH:mm:ss");
+      var timeNow = moment.tz("Asia/Kolkata").format("HH:mm:ss");
         api.sendMessage(`${timeNow}`, event.threadID)
 }
