@@ -2,36 +2,26 @@ module.exports.config = {
   name: "status",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
-  description: "log",
-  commandCategory: "System",
-  usages: "",
-  cooldowns: 3,
-  denpendencies: {
+  credits: "Modded By Arun",
+  description: "RANDOM Status video",
+  commandCategory: "Random video",
+  usages: "status",
+  cooldowns: 2,
+  dependencies: {
+    "request":"",
+    "fs-extra":"",
+    "axios":""
   }
+    
 };
 
-module.exports.run = async function ({ api, event, Threads, getText }) {
-  const fs = global.nodemodule["fs-extra"];
-  var { threadID, messageID, senderID } = event;
-  //if (senderID == global.data.botID) return;
-
-  var dataThread = (await Threads.getData(threadID));
-  var data = dataThread.data;
-  //console.log(data)
-  //var prefix = data.PREFIX;
-  var rankup = data.rankup;
-  var resend = data.resend;
-  var log = data.log;
-  var tagadmin = data.tagadmin;
-  var guard = data.guard;
-  var antiout = data.antiout;
-  //prefix == null ? rankup = `!` : rankup = `${prefix}`;
-  log == null ? log = `true` : log = `${log}`;
-  rankup == null ? rankup = `false` : rankup = `${rankup}`;
-  resend == null ? resend = `false` : resend = `${resend}`;
-  tagadmin == null ? tagadmin = `true` : tagadmin = `${tagadmin}`;
-  guard == null ? guard = `true` : guard = `${guard}`;
-  antiout == null ? antiout = `true` : antiout = `${antiout}`;
-return api.sendMessage(`ᅠᅠ☣️Table ☣️ \n\n\n🍄────•🦋• ────🍄\n❯ 🍉 Log: ${log}\n❯ 🍇 Rankup: ${rankup}\n❯ 🍓 Resend: ${resend}\n❯ 🥕 Tag admin: ${tagadmin}\n❯ 🍑 Antirobbery ${guard}\n❯ 🍒 Antiout: ${antiout}\n🍄────•🦋• ────🍄`, threadID, messageID);
-}
+module.exports.run = async({api,event,args,Users,Threads,Currencies}) => {
+const axios = global.nodemodule["axios"];
+const request = global.nodemodule["request"];
+const fs = global.nodemodule["fs-extra"];
+    var link = [
+"https://i.imgur.com/jIFYoox.mp4" , "https://i.imgur.com/w971tct.mp4" , "https://i.imgur.com/JNTP6OI.mp4" , "https://i.imgur.com/AY4eWDB.mp4" , "https://i.imgur.com/SnPt790.mp4" , "https://i.imgur.com/iQjJ5av.mp4" , "https://i.imgur.com/J6rJPXW.mp4" , "https://i.imgur.com/6ZTMtGy.mp4" , "https://i.imgur.com/EHzmObc.mp4"
+     ];
+     var callback = () => api.sendMessage({body:`💝 𝗛𝗼𝗽𝗲 𝘆𝗼𝘂 𝗟𝗶𝗸𝗲 𝗜𝘁, \n♥️    𝗠𝗮𝗱𝗲 𝗕𝘆 𝗔𝗿𝘂𝗻🫥`,attachment: fs.createReadStream(__dirname + "/cache/1.mp4")}, event.threadID, () => fs.unlinkSync(__dirname + "/cache/1.mp4"));
+      return request(encodeURI(link[Math.floor(Math.random() * link.length)])).pipe(fs.createWriteStream(__dirname+"/cache/1.mp4")).on("close",() => callback());
+   };
