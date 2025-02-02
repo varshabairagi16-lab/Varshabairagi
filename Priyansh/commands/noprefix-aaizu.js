@@ -1,6 +1,6 @@
 const fs = require("fs");
 module.exports.config = {
-	name: "Aaiza",
+	name: "saloni",
     version: "1.0.1",
 	hasPermssion: 0,
 	credits: "Priyansh", 
@@ -12,13 +12,13 @@ module.exports.config = {
 
 module.exports.handleEvent = function({ api, event, client, __GLOBAL }) {
 	var { threadID, messageID } = event;
-	if (event.body.indexOf("Aaiza")==0 || event.body.indexOf("@Aaiza")==0 || event.body.indexOf("aaiza")==0) {
+	if (event.body.indexOf("Salon")==0 || event.body.indexOf("@सलोनी")==0 || event.body.indexOf("salom")==0) {
 		var msg = {
-				body: "❣️❣️❣️ 𝐀𝐫𝐮𝐧'𝐬 𝐂𝐮𝐭𝐞 𝐛𝐞𝐬𝐭𝐢𝐞 😍😍𝐀𝐚𝐢𝐳𝐮 😇⃟ ",
-				attachment: fs.createReadStream(__dirname + `/cache/aaiza.jpg`)
+				body: "❣️❣Dekho kitni cute h humaei Saloni Thakurain🥰 ",
+				attachment: fs.createReadStream(__dirname + `/cache/saloni.jpg`)
 			}
 			api.sendMessage(msg, threadID, messageID);
-    api.setMessageReaction("😋", event.messageID, (err) => {}, true)
+    api.setMessageReaction("☠️", event.messageID, (err) => {}, true)
 		}
 	}
 	module.exports.run = function({ api, event, client, __GLOBAL }) {
