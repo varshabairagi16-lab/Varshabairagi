@@ -7,7 +7,7 @@ const https = require("https");
 
 module.exports = {
   config: {
-    name: "play",
+    name: "mm2",
     version: "1.0.3",
     hasPermssion: 0,
     credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
@@ -60,7 +60,7 @@ module.exports = {
 
       // Get the direct download URL from the API
       const downloadResponse = await axios.get(apiUrl);
-      const downloadUrl = downloadResponse.data.downloadUrl; // Assuming the API response contains the 'url' field for download
+      const downloadUrl = downloadResponse.data.result.downloadUrl; // Assuming the API response contains the 'url' field for download
 
       // Set the filename based on the song title and type
       const safeTitle = topResult.title.replace(/[^a-zA-Z0-9 \-_]/g, ""); // Clean the title
