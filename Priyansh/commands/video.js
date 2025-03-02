@@ -1,112 +1,85 @@
-const fetch = require("node-fetch");
-const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const ytSearch = require("yt-search");
+const axios = require("axios");
+const yts = require("yt-search");
 
-module.exports = {
-  config: {
-    name: "video",
-    version: "1.0.1",
-    hasPermssion: 0,
-    credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
-    description: "Download YouTube song from keyword search and link",
-    commandCategory: "Media",
-    usages: "[songName] [type]",
-    cooldowns: 5,
-    dependencies: {
-      "node-fetch": "",
-      "yt-search": "",
-    },
-  },
+module.exports.config = {
+  name: "video2",
+  hasPermission: 0,
+  version: "1.0.0",
+  description: "Download YouTube videos (under 25MB) or provide link",
+  credits: "Raj",
+  cooldowns: 10,
+  commandCategory: "Utility"
+};
 
-  run: async function ({ api, event, args }) {
-    let songName, type;
+module.exports.run = async function ({ api, event, args }) {
+  if (!args[0]) {
+    return api.sendMessage(`❌ | jis song ki video dekhni ho uska name likho..!`, event.threadID);
+  }
 
-    if (
-      args.length > 1 &&
-      (args[args.length - 1] === "audio" || args[args.length - 1] === "video")
-    ) {
-      type = args.pop();
-      songName = args.join(" ");
-    } else {
-      songName = args.join(" ");
-      type = "audio";
+  try {
+    const query = args.join(" ");
+    const findingMessage = await api.sendMessage(`🔍 | "${query}" Song dhondh Kar send karti hun...`, event.threadID);
+
+    const searchResults = await yts(query);
+    const firstResult = searchResults.videos[0];
+
+    if (!firstResult) {
+      await api.sendMessage(`❌ | "${query}" No results found for .`, event.threadID);
+      return;
     }
 
-    const processingMessage = await api.sendMessage(
-      "✅ Processing your request. Please wait...",
-      event.threadID,
-      null,
-      event.messageID
-    );
+    const { title, url } = firstResult;
+    await api.editMessage(`⏳ | "${title}" Download ka link mil raha hai...`, findingMessage.messageID);
 
-    try {
-      // Search for the song on YouTube
-      const searchResults = await ytSearch(songName);
-      if (!searchResults || !searchResults.videos.length) {
-        throw new Error("No results found for your search query.");
-      }
+    const apiUrl = `https://mr-prince-malhotra-ytdl.vercel.app/video?url=${encodeURIComponent(url)}`;
+    const response = await axios.get(apiUrl);
+    const responseData = response.data;
 
-      // Get the top result from the search
-      const topResult = searchResults.videos[0];
-      const videoId = topResult.videoId;
-
-      // Construct API URL for downloading the top result
-      const apiKey = "priyansh-here";
-      const apiUrl = `https://priyansh-ai.onrender.com/youtube?id=${videoId}&type=video&apikey=${apiKey}`;
-
-      api.setMessageReaction("⌛", event.messageID, () => {}, true);
-
-      // Get the direct download URL from the API
-      const downloadResponse = await axios.get(apiUrl);
-      const downloadUrl = downloadResponse.data.downloadUrl;
-
-      // Set request headers
-      const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        'Accept': '*/*',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Referer': 'https://cnvmp3.com/',
-        'Cookie': '_ga=GA1.1.1062081074.1735238555; _ga_MF283RRQCW=GS1.1.1735238554.1.1.1735239728.0.0.0',
-      };
-
-      const response = await fetch(downloadUrl, { headers });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch song. Status code: ${response.status}`);
-      }
-
-      // Set the filename based on the song title and type
-      const filename = `${topResult.title}.${type === "audio" ? "mp3" : "mp4"}`;
-      const downloadPath = path.join(__dirname, filename);
-
-      const songBuffer = await response.buffer();
-
-      // Save the song file locally
-      fs.writeFileSync(downloadPath, songBuffer);
-
-      api.setMessageReaction("✅", event.messageID, () => {}, true);
-
-      await api.sendMessage(
-        {
-          attachment: fs.createReadStream(downloadPath),
-          body: `🖤 Title: ${topResult.title}\n\n Here is your ${type === "audio" ? "audio" : "video"} 🎧:`,
-        },
-        event.threadID,
-        () => {
-          fs.unlinkSync(downloadPath);
-          api.unsendMessage(processingMessage.messageID);
-        },
-        event.messageID
-      );
-    } catch (error) {
-      console.error(`Failed to download and send song: ${error.message}`);
-      api.sendMessage(
-        `Failed to download song: ${error.message}`,
-        event.threadID,
-        event.messageID
-      );
+    if (!responseData.result || !responseData.result.url) {
+      await api.sendMessage(`❌ | "${title}" download ke liye koi link nhi mile`, event.threadID);
+      return;
     }
-  },
+
+    const downloadUrl = responseData.result.url;
+    const filePath = path.resolve(__dirname, "cache", `${Date.now()}-${title}.mp4`);
+
+    const videoResponse = await axios.get(downloadUrl, {
+      responseType: "stream",
+      headers: { "User-Agent": "Mozilla/5.0" }
+    });
+
+    const fileStream = fs.createWriteStream(filePath);
+    videoResponse.data.pipe(fileStream);
+
+    fileStream.on("finish", async () => {
+      const stats = fs.statSync(filePath);
+      const fileSizeInMB = stats.size / (1024 * 1024);
+
+      if (fileSizeInMB > 25) {
+        await api.sendMessage(`❌ | "${title}" Ka size ${fileSizeInMB.toFixed(2)}MB Hai, Jo 25 MB C Zada Hai ।📥 download link: ${downloadUrl}`, event.threadID);
+        fs.unlinkSync(filePath);
+        return;
+      }
+
+      await api.sendMessage({
+        body: `🎥 | Apki video ko"${title}" download karliya gaya hai!💞`,
+        attachment: fs.createReadStream(filePath)
+      }, event.threadID);
+
+      fs.unlinkSync(filePath);
+      api.unsendMessage(findingMessage.messageID);
+    });
+
+    videoResponse.data.on("error", async (error) => {
+      console.error(error);
+      await api.sendMessage(`❌ | video download karne me ak masla aya tha: ${error.message}`, event.threadID);
+      fs.unlinkSync(filePath);
+    });
+
+  } catch (error) {
+    console.error(error.response ? error.response.data : error.message);
+    await api.sendMessage(`❌ | Mujhe video download karne me kuch issues arahe hai: ${error.response ? error.response.data : error.message}`, event.threadID);
+  }
 };
