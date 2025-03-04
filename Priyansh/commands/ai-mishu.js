@@ -13,7 +13,7 @@ const config = {
 
 const handleEvent = async function ({ api, event, client, __GLOBAL }) {
 
-  if (event.body.indexOf("siri") === 0 || event.body.indexOf("Siri") === 0 || event.body.indexOf("Mish") === 0 || event.body.indexOf("mish") === 0)  {
+  if (event.body.indexOf("siri") === 0 || event.body.indexOf("Siri") === 0 || event.body.indexOf("misha") === 0 || event.body.indexOf("Misha") === 0)  {
     const { threadID, messageID } = event;
     const input = event.body;
     const message = input.split(" ");
@@ -23,6 +23,7 @@ const handleEvent = async function ({ api, event, client, __GLOBAL }) {
     } else {
       try {
         api.sendMessage(`𝙼𝚒𝚜𝚑𝚊 𝙰𝚒 𝙸𝚜 𝚆𝚘𝚛𝚔𝚒𝚗𝚐`, event.threadID);
+        const encodedText = encodeURIComponent(text);  
         const ris = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodedText}`);
         const resultai = ris.data.edtmsg;
 
