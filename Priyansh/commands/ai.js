@@ -21,9 +21,9 @@ module.exports.run = async function ({ api, event, args, Users }) {
 
   var name = await Users.getNameUser(event.senderID);
 
-  if (!args[0]) return api.sendMessage("Please type a message...", threadID, messageID );
+  if (!args[0]) return api.sendMessage("Kuch Likhoge ya nahi?_🙄...", threadID, messageID );
   
-  api.sendMessage("Hy ${name} , please wait...", threadID, messageID);
+  api.sendMessage("🫶🏻...", threadID, messageID);
 
   try{
 
