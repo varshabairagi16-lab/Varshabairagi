@@ -4,7 +4,7 @@ const config = {
   name: "mishu",
   version: "1.0.0",
   hasPermission: 0,
-  credits: "𝙉𝘼𝙐𝙂𝙃𝙏𝙔 ツ",
+  credits: "Arun ツ",
   description: "[ 𝗠𝗶𝘀𝗵𝗮 𝗔𝙞 ]",
   commandCategory: "no prefix",
   usages: "𝘼𝙨𝙠 𝘼 𝙌𝙪𝙚𝙨𝙩𝙞𝙤𝙣 𝙁𝙧𝙤𝙢 𝗠𝗶𝘀𝗵𝗮 𝘼𝙄",
@@ -19,10 +19,10 @@ const handleEvent = async function ({ api, event, client, __GLOBAL }) {
     const message = input.split(" ");
 
     if (message.length < 2) {
-      api.sendMessage("✨ 𝙷𝚎𝚕𝚕𝚘 𝙸 𝙰𝚖 𝙼𝚒𝚜𝚑𝚊 𝙿𝚕𝚎𝚊𝚜𝚎 𝚙𝚛𝚘𝚟𝚒𝚍𝚎 𝙼𝚎 𝚠𝚒𝚝𝚑 𝚢𝚘𝚞𝚛 𝚚𝚞𝚎𝚜𝚝", threadID);
+      api.sendMessage("✨ 𝙷𝚎𝚕𝚕𝚘 𝙸 𝙰𝚖 𝙼𝚒𝚜𝚑𝚊, @mention me Aur apna question pucho", threadID);
     } else {
       try {
-        api.sendMessage("𝙼𝚒𝚜𝚑𝚊 𝙰𝚒 𝙸𝚜 𝚆𝚘𝚛𝚔𝚒𝚗𝚐...", threadID);
+        api.sendMessage("🫶🏻...", threadID);
 
         const text = message.slice(1).join(" "); // Join the remaining parts of the message
         const encodedText = encodeURIComponent(text);
