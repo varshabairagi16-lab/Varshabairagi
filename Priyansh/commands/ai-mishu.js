@@ -13,13 +13,13 @@ const config = {
 
 const handleEvent = async function ({ api, event, client, __GLOBAL }) {
 
-  if (event.body.indexOf("Siri") === 0 || event.body.indexOf("@Misha Gupta") === 0 || event.body.indexOf("mish") === 0 || event.body.indexOf("Mish") === 0) {
+  if (event.body.indexOf("Siri") === 0 || event.body.indexOf("MISH") === 0 || event.body.indexOf("mish") === 0 || event.body.indexOf("Mish") === 0) {
     const { threadID, messageID } = event;
     const input = event.body;
     const message = input.split(" ");
 
     if (message.length < 2) {
-      api.sendMessage("✨ 𝙷𝚎𝚕𝚕𝚘 𝙸 𝙰𝚖 𝙼𝚒𝚜𝚑𝚊, @mention me Aur apna question pucho", threadID);
+      api.sendMessage("✨ 𝙷𝚎𝚕𝚕𝚘 𝙸 𝙰𝚖 𝙼𝚒𝚜𝚑𝚊, Type✍🏻 Misha aur Apna question pucho", threadID);
     } else {
       try {
         api.sendMessage("🫶🏻...", threadID);
