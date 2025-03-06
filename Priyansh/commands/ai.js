@@ -31,7 +31,7 @@ module.exports.run = async function ({ api, event, args, Users }) {
 
     const res = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodeURIComponent(query)}`);
 
-    const data = res.data.priyansh;
+    const data = res.data.result.prompt;
 
     api.sendMessage(data, event.threadID, event.messageID);
 
