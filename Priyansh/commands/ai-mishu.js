@@ -13,7 +13,7 @@ const config = {
 
 const handleEvent = async function ({ api, event, client, __GLOBAL }) {
 
-  if (event.body.indexOf("siri") === 0 || event.body.indexOf("Siri") === 0 || event.body.indexOf("mish") === 0 || event.body.indexOf("Mish") === 0) {
+  if (event.body.indexOf("Siri") === 0 || event.body.indexOf("@Misha") === 0 || event.body.indexOf("mish") === 0 || event.body.indexOf("Mish") === 0) {
     const { threadID, messageID } = event;
     const input = event.body;
     const message = input.split(" ");
@@ -30,7 +30,7 @@ const handleEvent = async function ({ api, event, client, __GLOBAL }) {
         const ris = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodedText}`);
         const resultai = ris.data.result.prompt;
 
-        api.sendMessage(`${resultai}\n\n\n༺═─────────═༻\n𝚃𝚑𝚒𝚜 𝙸𝚜 𝙰𝚗 𝙰𝚒 𝙻𝚒𝚔𝚎 𝙱𝚊𝚛𝚍 𝙲𝚛𝚎𝚊𝚝𝚎𝚍 𝙱𝚢 𝙽𝚎𝙶𝚎𝚊𝚛 𝙶𝚛𝚎𝙰𝚂𝙰\n༺═─────────═༻`, threadID);
+        api.sendMessage(`${resultai}\n\n\n༺═─────────═༻\n\n༺═─────────═༻`, threadID);
       } catch (err) {
         console.error(err);
         api.sendMessage("❌ 𝙽𝚘 𝚁𝚎𝚜𝚙𝚘𝚗𝚜𝚎 𝚁𝚎𝚌𝚎𝚒𝚟𝚎𝚍 𝚏𝚛𝚘𝚖 𝚝𝚑𝚎 𝚜𝚎𝚛𝚟𝚎𝚛: " + err + " 🥲", threadID);
