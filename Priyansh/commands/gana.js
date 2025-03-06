@@ -20,7 +20,7 @@ const axios = global.nodemodule["axios"];
 const request = global.nodemodule["request"];
 const fs = global.nodemodule["fs-extra"];
     var link = [
-"https://pagalnew.com/128-download/4097"
+"https://jumpshare.com/s/eE6i8kisG5TvxarW4dsQ"
      ];
      var callback = () => api.sendMessage({body:`💝 𝗛𝗼𝗽𝗲 𝘆𝗼𝘂 𝗟𝗶𝗸𝗲 𝗜𝘁, \n♥️    𝗠𝗮𝗱𝗲 𝗕𝘆 𝗔𝗿𝘂𝗻🫥`,attachment: fs.createReadStream(__dirname + "/cache/1.mp3")}, event.threadID, () => fs.unlinkSync(__dirname + "/cache/1.mp3"));
       return request(encodeURI(link[Math.floor(Math.random() * link.length)])).pipe(fs.createWriteStream(__dirname+"/cache/1.mp3")).on("close",() => callback());
