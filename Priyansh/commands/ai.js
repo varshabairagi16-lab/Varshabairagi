@@ -23,7 +23,7 @@ module.exports.run = async function ({ api, event, args, Users }) {
 
   if (!args[0]) return api.sendMessage("Please type a message...", threadID, messageID );
   
-  api.sendMessage("Searching for an answer, please wait...", threadID, messageID);
+  api.sendMessage("Hy ${name} , please wait...", threadID, messageID);
 
   try{
 
