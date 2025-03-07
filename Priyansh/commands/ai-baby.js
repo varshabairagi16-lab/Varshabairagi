@@ -14,7 +14,7 @@ const config = {
 const handleEvent = async function ({ api, event, client, __GLOBAL }) {
 
   if (event.body.indexOf("Babu") === 0 || event.body.indexOf("Baby") === 0 || event.body.indexOf("BABU") === 0 || event.body.indexOf("BABY") === 0) {
-    const { threadID, messageID } = event;
+    const { threadID, messageID, senderID } = event;
     const input = event.body;
     const message = input.split(" ");
 
@@ -22,12 +22,12 @@ const handleEvent = async function ({ api, event, client, __GLOBAL }) {
       api.sendMessage("✨ 𝙷𝚎𝚕𝚕𝚘 , Type✍🏻 Baby aur Apna question pucho", threadID);
     } else {
       try {
-        api.sendMessage("🫶🏻...", threadID);
+        api.sendMessage("🌠...", threadID);
 
         const text = message.slice(1).join(" "); // Join the remaining parts of the message
         const encodedText = encodeURIComponent(text);
 
-        const ris = await axios.get(`https://priyansh-ai.onrender.com/ai?prompt=${encodedText}&uid=${threadID}&apikey=priyansh-here`);
+        const ris = await axios.get(`https://priyansh-ai.onrender.com/ai?prompt=${encodedText}&uid=${senderID}&apikey=priyansh-here`);
         const resultai = ris.data.response;
 
         api.sendMessage(`${resultai}\n༺═──༻`, threadID);
