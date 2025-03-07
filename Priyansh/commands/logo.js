@@ -18,9 +18,9 @@ module.exports.run = async function ({ api, event, args, Users }) {
 
   if (args.length === 1 && args[0] === "list") {
     const logoTypes = [
-      "\n1 : Glowing", "\n2 : chromelogo", "\n3 : black metal", "\n4 : bluetext","\n5 : bluemetal","\n6 : hot logo",
-      "\n7 : carbon", "\n8 : yellow", "\n9 : golden", "\n10 : blue jewerly", "\n11 : cyan jewerly", "\n12 : green",
-      "\n13 : orange jewerly", "\n14 : purple jewerly", "\n15 : red jewerly", "\n\nmore logo for : logov2"
+      "\n====Logos By Mirrykal====" , "\n1 : Blackpink", "\n2 : American Flag", "\n3 : Glossy Silver", "\n4 : Bear Logo","\n5 : 3d Baloon","\n6 : Comic Style",
+      "\n7 : Pixel Glitch", "\n8 : Digital Glitch", "\n9 : Naruto Shippuden", "\n10 : Devil Wings", "\n11 : Wet Glass " , "\n12 : Typography Status",
+      "\n13 : Dragon Ball", "\n14 : Castle Pop", "\n15 : Frozen Christmas", "\n\nmore logos coming soon"
     ];
     return api.sendMessage(`All types of logos:\n\n${logoTypes.join(", ")}`, threadID, messageID);
   }
@@ -41,59 +41,59 @@ module.exports.run = async function ({ api, event, args, Users }) {
       message = "『𝙂𝙇𝙊𝙒𝙄𝙉𝙂』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "2":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/2?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/free-online-american-flag-3d-text-effect-generator-725.html&name=${name}`;
       message = "『𝘾𝙝𝙧𝙤𝙢𝙚 𝙇𝙤𝙜𝙤』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "3":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/3?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-glossy-silver-3d-text-effect-online-802.html&name=${name}`;
       message = "『𝘽𝙡𝙖𝙘𝙠 𝙈𝙚𝙩𝙖𝙡』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫";
       break;
     case "4":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/4?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/free-bear-logo-maker-online-673.html&name=${name}`;
       message = "『𝘽𝙡𝙪𝙚 𝙏𝙚𝙭𝙩』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "5":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/5?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/beautiful-3d-foil-balloon-effects-for-holidays-and-birthday-803.html&name=${name}`;
       message = "『𝘽𝙡𝙪𝙚 𝙈𝙚𝙩𝙖𝙡』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "6":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/6?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-online-3d-comic-style-text-effects-817.html&name=${name}`;
       message = "『𝙃𝙤𝙩 𝙇𝙤𝙜𝙤』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "7":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/7?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-pixel-glitch-text-effect-online-769.html&name=${name}`;
       message = "『𝘾𝙖𝙧𝙗𝙤𝙣』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽: ➫ ";
       break;
     case "8":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/8?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-digital-glitch-text-effects-online-767.html&name=${name}`;
       message = "『𝙔𝙚𝙡𝙡𝙤𝙬』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "9":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/9?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/naruto-shippuden-logo-style-text-effect-online-808.html&name=${name}`;
       message = "『𝙂𝙤𝙡𝙙𝙚𝙣』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "10":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/10?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/neon-devil-wings-text-effect-online-683.html&name=${name}`;
       message = "『𝘽𝙡𝙪𝙚 𝙅𝙚𝙬𝙚𝙡𝙧𝙮』 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "11":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/11?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/write-text-on-wet-glass-online-589.html&name=${name}`;
       message = "『𝘾𝙮𝙖𝙣 𝙅𝙚𝙬𝙚𝙡𝙧𝙮』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "12":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/12?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-typography-status-online-with-impressive-leaves-357.html&name=${name}`;
       message = "『𝙂𝙧𝙚𝙚𝙣 𝙇𝙤𝙜𝙤』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "13":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/13?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-dragon-ball-style-text-effects-online-809.html&name=${name}`;
       message = "『𝙊𝙧𝙖𝙣𝙜𝙚 𝙅𝙚𝙬𝙚𝙡𝙧𝙮』 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "14":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/14?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-a-3d-castle-pop-out-mobile-photo-effect-786.html&name=${name}`;
       message = "『𝙋𝙪𝙧𝙥𝙡𝙚 𝙅𝙚𝙬𝙚𝙡𝙧𝙮』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     case "15":
-      apiUrl = `https://reset-api.ch9nd.repl.co/api/textpro/15?text=${name}`;
+      apiUrl = `https://api-pink-venom.vercel.app/api/logo?url=https://en.ephoto360.com/create-a-frozen-christmas-text-effect-online-792.html&name=${name}`;
       message = "『𝙍𝙚𝙙 𝙅𝙚𝙬𝙚𝙡𝙧𝙮』 ➫ 𝘽𝙖𝙗𝙮 𝙔𝙖𝙡𝙤 𝘼𝙥𝙣𝙖 𝙇𝙤𝙜𝙤💚🪽 ➫ ";
       break;
     default:
