@@ -27,10 +27,10 @@ const handleEvent = async function ({ api, event, client, __GLOBAL }) {
         const text = message.slice(1).join(" "); // Join the remaining parts of the message
         const encodedText = encodeURIComponent(text);
 
-        const ris = await axios.get(`https://priyansh-ai.onrender.com/ai?prompt=${encodedText}&uid=${messageID}&apikey=priyansh-here`);
+        const ris = await axios.get(`https://priyansh-ai.onrender.com/ai?prompt=${encodedText}&uid=${threadID}&apikey=priyansh-here`);
         const resultai = ris.data.response;
 
-        api.sendMessage(`${resultai}\n\n\n༺═─────────═༻\n\n༺═─────────═༻`, threadID);
+        api.sendMessage(`${resultai}\n༺═──༻`, threadID);
       } catch (err) {
         console.error(err);
         api.sendMessage("❌ 𝙽𝚘 𝚁𝚎𝚜𝚙𝚘𝚗𝚜𝚎 𝚁𝚎𝚌𝚎𝚒𝚟𝚎𝚍 𝚏𝚛𝚘𝚖 𝚝𝚑𝚎 𝚜𝚎𝚛𝚟𝚎𝚛: " + err + " 🥲", threadID);
