@@ -52,13 +52,8 @@ module.exports.handleEvent = async function({ api, event, Currencies, Users, get
 		const moduleName = this.config.name;
 
     var background = [
-  "https://i.imgur.com/tVCXB0q.jpeg",
-  "https://i.imgur.com/JBYox72.jpeg",
-  "https://i.imgur.com/SRRuSRk.jpeg",   "https://i.imgur.com/qhx5HLz.jpeg",
-  "https://i.imgur.com/kbB4AfZ.jpeg",
-  "https://i.imgur.com/9oxlszW.jpeg",
-  "https://i.imgur.com/cJj8LTu.jpeg",   "https://i.imgur.com/LHb5eJt.jpeg",
-
+  "https://i.postimg.cc/1tjrPLJG/Picsart-24-01-18-11-39-45-360.jpg",
+  "https://i.postimg.cc/KYYTz0KJ/Picsart-24-01-18-11-46-47-596.jpg",
   ];
     var rd = background[Math.floor(Math.random() * background.length)];
     let getAvtmot = (
@@ -82,7 +77,7 @@ module.exports.handleEvent = async function({ api, event, Currencies, Users, get
     let ctx = canvas.getContext("2d");
     ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
     ctx.rotate(-25 * Math.PI / 180);
-    ctx.drawImage(baseAvt1, 40, 710, 630, 700);
+    ctx.drawImage(baseAvt1, 37, 120, 125, 130);
     const imageBuffer = canvas.toBuffer();
     fs.writeFileSync(pathImg, imageBuffer);
     fs.removeSync(pathAvt1);
@@ -105,7 +100,7 @@ module.exports.languages = {
 		"on": "on",
 		"off": "off",
 		"successText": "success notification rankup!",
-		"levelup": "{name}, your keyboard has reached level {level}",
+		"levelup": "💝 🥀══𝐂𝐨𝐍𝐑𝐀𝐓𝐒══🥀 \n\n ⃟══•{name}══⃟❣ \n\n  𝐘𝐨𝐔𝐑 𝐋𝐄𝐕𝐄𝐋 𝐈𝐒 ➾ 🍫 {level} \n\n 🥀🥀🥀🥀🥀🥀🥀🥀🥀🥀🥀",
 	}
 }
 
@@ -119,4 +114,4 @@ module.exports.run = async function({ api, event, Threads, getText }) {
 	await Threads.setData(threadID, { data });
 	global.data.threadData.set(threadID, data);
 	return api.sendMessage(`${(data["rankup"] == true) ? getText("on") : getText("off")} ${getText("successText")}`, threadID, messageID);
-                    }
+    }
