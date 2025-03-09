@@ -1,7 +1,7 @@
 const axios = require('axios');
 const GENIUS_API_TOKEN = 'gRv1cUGxYhzdvCjKBJqCwH9_VwmcZtNHpIYXyAQVr6c8dnMWO9Po7v-Lwz2w9UOQ2SjqJZdxzYEIcgmdAmgDXg';
 const GENIUS_API_CLIENT_ID = 'zZ0MpucBCvw3uKiD-lmyBYyouvKNBShX5RnNMHeRhz5lRTKbObTiGDqhLh_VGeZ2';
-module.exports.info = {
+module.exports.config = {
   name: 'lyrics',
   version: '2.0.0',
   hasPermission: 0,
