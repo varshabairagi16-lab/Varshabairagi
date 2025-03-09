@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 const config = {
-  name: "mishu",
+  name: "janu",
   version: "1.0.0",
   hasPermission: 0,
   credits: "Arun ツ",
@@ -13,22 +13,22 @@ const config = {
 
 const handleEvent = async function ({ api, event, client, __GLOBAL }) {
 
-  if (event.body.indexOf("Siri") === 0 || event.body.indexOf("MISH") === 0 || event.body.indexOf("mish") === 0 || event.body.indexOf("Mish") === 0) {
+  if (event.body.indexOf("janu") === 0 || event.body.indexOf("JANU") === 0 || event.body.indexOf("mish") === 0 || event.body.indexOf("Janu") === 0) {
     const { threadID, messageID } = event;
     const input = event.body;
     const message = input.split(" ");
 
     if (message.length < 2) {
-      api.sendMessage("✨ 𝙷𝚎𝚕𝚕𝚘 𝙸 𝙰𝚖 𝙼𝚒𝚜𝚑𝚊, Type✍🏻 Misha aur Apna question pucho", threadID);
+      api.sendMessage("✨  Type✍🏻 janu aur Apna question pucho", threadID);
     } else {
       try {
         api.sendMessage("🫶🏻...", threadID);
 
         const text = message.slice(1).join(" "); // Join the remaining parts of the message
-        const encodedText = encodeURIComponent(text);
+        const bakwas = encodeURIComponent(text);
 
-        const ris = await axios.get(`https://api.dreaded.site/api/chatgpt?text=${encodedText}`);
-        const resultai = ris.data.result.prompt;
+        const ris = await axios.get(`https://priyansh-ai.onrender.com/api/blackboxai?query=${bakwas}`);
+        const resultai = ris.data.priyansh;
 
         api.sendMessage(`${resultai}\n\n\n༺═─────────═༻\n\n༺═─────────═༻`, threadID);
       } catch (err) {
