@@ -25,9 +25,9 @@ const handleEvent = async function ({ api, event, client, __GLOBAL }) {
         api.sendMessage("🫶🏻...", threadID);
 
         const text = message.slice(1).join(" "); // Join the remaining parts of the message
-        const bakwas = encodeURIComponent(text);
+        const encodedText = encodeURIComponent(text);
 
-        const ris = await axios.get(`https://priyansh-ai.onrender.com/api/blackboxai?query=${bakwas}`);
+        const ris = await axios.get(`https://priyansh-ai.onrender.com/api/blackboxai?query=${encodedText}`);
         const resultai = ris.data.priyansh;
 
         api.sendMessage(`${resultai}\n\n\n༺═─────────═༻\n\n༺═─────────═༻`, threadID);
