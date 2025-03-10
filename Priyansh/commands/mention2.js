@@ -1,19 +1,19 @@
 module.exports.config = {
-  name: "mention-bot",
+  name: "mentionbot",
   version: "1.0.0-beta-fixbyDungUwU",
   hasPermssion: 0,
-  credits: "Arun",
+  credits: "Fixed By Arun",
   description: "Bot will rep ng tag admin or rep ng tagbot ",
-  commandCategory: "system",
+  commandCategory: "Other",
   usages: "",
   cooldowns: 1
 };
 module.exports.handleEvent = function({ api, event }) {
-  if (event.senderID !== "61568085500953" {
-    var aid = ["61568085500953" , "61551225242006" , "61557135887844"];
+  if (event.senderID !== "61551225242006") {
+    var aid = ["61551225242006","61551225242006"];
     for (const id of aid) {
     if ( Object.keys(event.mentions) == id) {
-      var msg = ["Me Jaanu Ke Sath Busy hu , Mujhe kyu bula rahe ho" , "Abe Me bot hu mujhe mention mat kar" , "Dimag Mat khao" , "Kya hua janu mujhe bulaya🙂" , "Koi kaam ni hai kya tujhe" , "Bolo na babu" , "Meri yaad arahi tumhe itni" , "Ha meri jan😙" , "Mujhe mt bulya kro🙄" , "Tera sar f0d dena me , baar mention mt kro😒" , "Ek Bar Me smjh ni ata tujhe kya meri baat ,mujhe baar bar mention krrhe ho😒😒😒😒" , "Abee jaa na 😒" , "Mujhe Bulaya😘kya"];
+      var msg = ["Mujhe Tang Mat Karo😒", "Mujhe mt bulao, me janu ke sath busy hu🙈", "Bola Na mention Mat Kar, Dur Rho🫡", "kya hua kyu chilla rahe ho😒😒", "Haye mujhe Sharam ati hai🙈 ese mat bulao", "chup😒😒😒", "Bolo na Jaanu" , "Haa jaan Bulaya kya" , "Boliye mere sarkar 🐥"];
       return api.sendMessage({body: msg[Math.floor(Math.random()*msg.length)]}, event.threadID, event.messageID);
     }
     }}
