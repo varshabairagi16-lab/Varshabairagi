@@ -54,7 +54,7 @@ module.exports = {
       const videoUrl = `https://www.youtube.com/watch?v=${topResult.videoId}`;
 
       // Construct API URL for downloading the video or audio
-      const apiUrl = `https://apis.davidcyriltech.my.id/youtube/${type === "audio" ? "mp3" : "mp4"}?url=${encodeURIComponent(videoUrl)}`;
+      const apiUrl = `https://apis.davidcyriltech.my.id/youtube/mp3?url=${encodeURIComponent(videoUrl)}`;
 
       api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
