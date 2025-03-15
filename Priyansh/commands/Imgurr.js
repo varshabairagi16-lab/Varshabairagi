@@ -57,7 +57,7 @@ module.exports = {
 // Function to upload an image to Imgur
 async function uploadToImgur(imageUrl) {
   try {
-    const clientId = "fc9369e9aea767c"; // Your Imgur Client ID
+    const clientId = "1ef5dda0e315e20"; // Your Imgur Client ID
     const response = await axios.post(
       "https://api.imgur.com/3/upload",
       { image: imageUrl },
