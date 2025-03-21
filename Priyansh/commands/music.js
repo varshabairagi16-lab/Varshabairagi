@@ -13,27 +13,16 @@ module.exports = {
     credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
     description: "Download YouTube song from keyword search and link",
     commandCategory: "Media",
-    usages: "[songName] [type]",
+    usages: "[songName]",
     cooldowns: 5,
-    dependencies: {
-      "node-fetch": "",
-      "yt-search": "",
-    },
   },
 
   run: async function ({ api, event, args }) {
-    let songName, type;
-
-    if (
-      args.length > 1 &&
-      (args[args.length - 1] === "audio" || args[args.length - 1] === "video")
-    ) {
-      type = args.pop();
-      songName = args.join(" ");
-    } else {
-      songName = args.join(" ");
-      type = "audio";
+    if (!args.length) {
+      return api.sendMessage("❌ Please provide a song name.", event.threadID, event.messageID);
     }
+
+    const songName = args.join(" ");
 
     const processingMessage = await api.sendMessage(
       "✅ Processing your request. Please wait...",
@@ -53,18 +42,22 @@ module.exports = {
       const topResult = searchResults.videos[0];
       const videoUrl = `https://www.youtube.com/watch?v=${topResult.videoId}`;
 
-      // Construct API URL for downloading the video or audio
-      const apiUrl = `https://apis.davidcyriltech.my.id/youtube/mp3?url=${encodeURIComponent(videoUrl)}`;
+      // Use your custom API to get the download link
+      const apiUrl = `https://mirrykal.onrender.com/mp3?url=${encodeURIComponent(videoUrl)}`;
 
       api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-      // Get the direct download URL from the API
+      // Get the direct download URL from your API
       const downloadResponse = await axios.get(apiUrl);
-      const downloadUrl = downloadResponse.data.result.downloadUrl; // Assuming the API response contains the 'url' field for download
+      const downloadUrl = downloadResponse.data.file_url;
 
-      // Set the filename based on the song title and type
+      if (!downloadUrl) {
+        throw new Error("Download URL not found in API response.");
+      }
+
+      // Set filename based on the song title
       const safeTitle = topResult.title.replace(/[^a-zA-Z0-9 \-_]/g, ""); // Clean the title
-      const filename = `${safeTitle}.${type === "audio" ? "mp3" : "mp4"}`;
+      const filename = `${safeTitle}.mp3`;
       const downloadDir = path.join(__dirname, "cache");
       const downloadPath = path.join(downloadDir, filename);
 
@@ -84,9 +77,7 @@ module.exports = {
               file.close(resolve);
             });
           } else {
-            reject(
-              new Error(`Failed to download file. Status code: ${response.statusCode}`)
-            );
+            reject(new Error(`Failed to download file. Status code: ${response.statusCode}`));
           }
         }).on("error", (error) => {
           fs.unlinkSync(downloadPath);
@@ -100,9 +91,7 @@ module.exports = {
       await api.sendMessage(
         {
           attachment: fs.createReadStream(downloadPath),
-          body: `🖤 Title: ${topResult.title}\n\n Here is your ${
-            type === "audio" ? "audio" : "video"
-          } 🎧:`,
+          body: `🎵 Title: ${topResult.title}\n\nHere is your audio file 🎧:`,
         },
         event.threadID,
         () => {
@@ -114,7 +103,7 @@ module.exports = {
     } catch (error) {
       console.error(`Failed to download and send song: ${error.message}`);
       api.sendMessage(
-        `Failed to download song: ${error.message}`,
+        `❌ Failed to download song: ${error.message}`,
         event.threadID,
         event.messageID
       );
