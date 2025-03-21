@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/Priyansh-11/Priyansh-bot/issues",
   "dependencies": {
-      "@distube/ytdl-core": "^4.13.2",
+      "@distube/ytdl-core": "^4.16.5",
       "@miraipr0ject/assets": "^1.0.9",
       "@replit/database": "^2.0.2",
       "@supercharge/strings": "^1.28.0",
@@ -118,7 +118,6 @@
       "youtubei.js": "^1.4.5",
       "yt-search": "^2.10.4",
       "ytdl-core": "^4.11.2",
-      "ytsr": "^4.10.0",
       "zalgo": "0.0.1"
   }
 }
