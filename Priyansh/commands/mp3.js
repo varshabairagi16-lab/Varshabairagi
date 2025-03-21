@@ -1,64 +1,119 @@
-const ytSearch = require("yt-search");
-const ytdl = require("@distube/ytdl-core");
+const fetch = require("node-fetch");
 const axios = require("axios");
-const fs = require("fs-extra");
-const ffmpeg = require("fluent-ffmpeg");
+const fs = require("fs");
 const path = require("path");
+const ytSearch = require("yt-search");
+const https = require("https");
 
-module.exports.config = {
-  name: "mp3",
-  usePrefix: false,
-  version: "1.0",
-  credits: "Modified by Mirrykal",
-  cooldowns: 5,
-  hasPermission: 0,
-  description: "Download and play MP3 from YouTube",
-  commandCategory: "music",
-  usages: "music [song name]"
-};
+module.exports = {
+  config: {
+    name: "mp3",
+    version: "1.0.4",
+    hasPermssion: 0,
+    credits: "Mirrykal (Updated Version)",
+    description: "Download YouTube song using yt-search and yt-dlp",
+    commandCategory: "Media",
+    usages: "[songName] [type]",
+    cooldowns: 5,
+    dependencies: {
+      "node-fetch": "",
+      "yt-search": "",
+    },
+  },
 
-module.exports.run = async function ({ api, event, args }) {
-  if (!args.length) {
-    return api.sendMessage("Please provide a song name!", event.threadID, event.messageID);
-  }
+  run: async function ({ api, event, args }) {
+    let songName, type;
 
-  const query = args.join(" ");
-  api.sendMessage(`Searching for: ${query}`, event.threadID);
-
-  try {
-    // YouTube पर सॉन्ग सर्च करो
-    const searchResults = await ytSearch(query);
-    if (!searchResults.videos.length) {
-      return api.sendMessage("No results found.", event.threadID, event.messageID);
+    if (
+      args.length > 1 &&
+      (args[args.length - 1] === "audio" || args[args.length - 1] === "video")
+    ) {
+      type = args.pop();
+      songName = args.join(" ");
+    } else {
+      songName = args.join(" ");
+      type = "audio";
     }
 
-    const video = searchResults.videos[0]; // पहला रिजल्ट लो
-    const videoUrl = video.url;
-    const videoTitle = video.title;
-    const filePath = path.join(__dirname, `${videoTitle}.mp3`);
+    const processingMessage = await api.sendMessage(
+      "✅ Processing your request. Please wait...",
+      event.threadID,
+      null,
+      event.messageID
+    );
 
-    api.sendMessage(`Downloading: ${videoTitle}`, event.threadID);
+    try {
+      // YouTube पर सॉन्ग सर्च करो
+      const searchResults = await ytSearch(songName);
+      if (!searchResults || !searchResults.videos.length) {
+        throw new Error("No results found for your search query.");
+      }
 
-    // YouTube से ऑडियो डाउनलोड करो
-    const stream = ytdl(videoUrl, { quality: "highestaudio" });
-    const writeStream = fs.createWriteStream(filePath);
+      const topResult = searchResults.videos[0];
+      const videoUrl = `https://www.youtube.com/watch?v=${topResult.videoId}`;
 
-    ffmpeg(stream)
-      .audioBitrate(128)
-      .save(filePath)
-      .on("end", async () => {
-        api.sendMessage(
-          {
-            body: `Here is your song: ${videoTitle}`,
-            attachment: fs.createReadStream(filePath),
-          },
-          event.threadID,
-          () => fs.unlinkSync(filePath), // फाइल डिलीट करो
-          event.messageID
-        );
+      // yt-dlp API से MP3 लिंक लो
+      const apiUrl = `https://yt-dlp-api.vercel.app/mp3?url=${encodeURIComponent(videoUrl)}`;
+      api.setMessageReaction("⌛", event.messageID, () => {}, true);
+
+      // API से डाउनलोड लिंक लो
+      const { data } = await axios.get(apiUrl);
+      const downloadUrl = data.url; // yt-dlp API में `url` फील्ड में MP3 लिंक होता है
+
+      if (!downloadUrl) {
+        throw new Error("Failed to retrieve download link.");
+      }
+
+      // File path सेट करो
+      const safeTitle = topResult.title.replace(/[^a-zA-Z0-9 \-_]/g, "");
+      const filename = `${safeTitle}.${type === "audio" ? "mp3" : "mp4"}`;
+      const downloadDir = path.join(__dirname, "cache");
+      const downloadPath = path.join(downloadDir, filename);
+
+      if (!fs.existsSync(downloadDir)) {
+        fs.mkdirSync(downloadDir, { recursive: true });
+      }
+
+      // MP3 फाइल डाउनलोड करो
+      const file = fs.createWriteStream(downloadPath);
+      await new Promise((resolve, reject) => {
+        https.get(downloadUrl, (response) => {
+          if (response.statusCode === 200) {
+            response.pipe(file);
+            file.on("finish", () => {
+              file.close(resolve);
+            });
+          } else {
+            reject(new Error(`Failed to download file. Status: ${response.statusCode}`));
+          }
+        }).on("error", (error) => {
+          fs.unlinkSync(downloadPath);
+          reject(new Error(`Error downloading file: ${error.message}`));
+        });
       });
-  } catch (error) {
-    console.error(error);
-    return api.sendMessage("An error occurred while processing your request.", event.threadID, event.messageID);
-  }
+
+      api.setMessageReaction("✅", event.messageID, () => {}, true);
+
+      // बॉट से MP3 भेजो और फाइल डिलीट करो
+      await api.sendMessage(
+        {
+          attachment: fs.createReadStream(downloadPath),
+          body: `🎧 Title: ${topResult.title}\n\n Here is your song:`,
+        },
+        event.threadID,
+        () => {
+          fs.unlinkSync(downloadPath);
+          api.unsendMessage(processingMessage.messageID);
+        },
+        event.messageID
+      );
+    } catch (error) {
+      console.error(`Failed to download and send song: ${error.message}`);
+      api.sendMessage(
+        `Failed to download song: ${error.message}`,
+        event.threadID,
+        event.messageID
+      );
+    }
+  },
 };
