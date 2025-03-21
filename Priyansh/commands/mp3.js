@@ -6,7 +6,7 @@ const ffmpeg = require("fluent-ffmpeg");
 const path = require("path");
 
 module.exports.config = {
-  name: "music",
+  name: "mp3",
   usePrefix: false,
   version: "1.0",
   credits: "Modified by Mirrykal",
