@@ -3,11 +3,12 @@ const fs = require("fs");
 const path = require("path");
 const ytSearch = require("yt-search");
 const https = require("https");
+const http = require("http");
 
 module.exports = {
   config: {
-    name: "music",
-    version: "1.1.0",
+    name: "mplay",
+    version: "1.1.1",
     hasPermssion: 0,
     credits: "Mirrykal",
     description: "Download YouTube song from search",
@@ -50,7 +51,13 @@ module.exports = {
         throw new Error("Failed to process video. API did not return a file URL.");
       }
 
-      const downloadUrl = response.data.file_url;
+      let downloadUrl = response.data.file_url;
+
+      // Ensure the URL uses HTTPS
+      if (downloadUrl.startsWith("http://")) {
+        downloadUrl = downloadUrl.replace("http://", "https://");
+      }
+
       const safeTitle = topResult.title.replace(/[^a-zA-Z0-9 \-_]/g, ""); // Clean the title
       const filename = `${safeTitle}.mp3`;
       const downloadDir = path.join(__dirname, "cache");
@@ -61,10 +68,13 @@ module.exports = {
         fs.mkdirSync(downloadDir, { recursive: true });
       }
 
+      // Select appropriate module based on protocol
+      const protocol = downloadUrl.startsWith("https") ? https : http;
+
       // Download the file
       const file = fs.createWriteStream(downloadPath);
       await new Promise((resolve, reject) => {
-        https.get(downloadUrl, (response) => {
+        protocol.get(downloadUrl, (response) => {
           if (response.statusCode === 200) {
             response.pipe(file);
             file.on("finish", () => {
