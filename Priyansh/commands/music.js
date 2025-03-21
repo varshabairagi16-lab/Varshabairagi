@@ -1,4 +1,3 @@
-const fetch = require("node-fetch");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
@@ -8,24 +7,23 @@ const https = require("https");
 module.exports = {
   config: {
     name: "music",
-    version: "1.0.3",
+    version: "1.1.0",
     hasPermssion: 0,
     credits: "Mirrykal",
-    description: "Download YouTube song from keyword search and link",
+    description: "Download YouTube song from search",
     commandCategory: "Media",
     usages: "[songName]",
     cooldowns: 5,
   },
 
   run: async function ({ api, event, args }) {
-    if (!args.length) {
-      return api.sendMessage("❌ Please provide a song name.", event.threadID, event.messageID);
+    if (args.length === 0) {
+      return api.sendMessage("⚠️ Please provide a song name to search.", event.threadID);
     }
 
     const songName = args.join(" ");
-
     const processingMessage = await api.sendMessage(
-      "✅ Processing your request. Please wait...",
+      `🔍 Searching for "${songName}"...`,
       event.threadID,
       null,
       event.messageID
@@ -42,33 +40,29 @@ module.exports = {
       const topResult = searchResults.videos[0];
       const videoUrl = `https://www.youtube.com/watch?v=${topResult.videoId}`;
 
-      // Use your custom API to get the download link
-      const apiUrl = `https://mirrykal.onrender.com/mp3?url=${encodeURIComponent(videoUrl)}`;
-
       api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-      // Get the direct download URL from your API
-      const downloadResponse = await axios.get(apiUrl);
-      const downloadUrl = downloadResponse.data.file_url;
+      // Call your API to process the video
+      const apiUrl = `https://mirrykal.onrender.com/download?url=${encodeURIComponent(videoUrl)}`;
+      const response = await axios.get(apiUrl);
 
-      if (!downloadUrl) {
-        throw new Error("Download URL not found in API response.");
+      if (!response.data.file_url) {
+        throw new Error("Failed to process video. API did not return a file URL.");
       }
 
-      // Set filename based on the song title
+      const downloadUrl = response.data.file_url;
       const safeTitle = topResult.title.replace(/[^a-zA-Z0-9 \-_]/g, ""); // Clean the title
       const filename = `${safeTitle}.mp3`;
       const downloadDir = path.join(__dirname, "cache");
       const downloadPath = path.join(downloadDir, filename);
 
-      // Ensure the directory exists
+      // Ensure the cache directory exists
       if (!fs.existsSync(downloadDir)) {
         fs.mkdirSync(downloadDir, { recursive: true });
       }
 
-      // Download the file and save locally
+      // Download the file
       const file = fs.createWriteStream(downloadPath);
-
       await new Promise((resolve, reject) => {
         https.get(downloadUrl, (response) => {
           if (response.statusCode === 200) {
@@ -87,26 +81,22 @@ module.exports = {
 
       api.setMessageReaction("✅", event.messageID, () => {}, true);
 
-      // Send the downloaded file to the user
+      // Send the file
       await api.sendMessage(
         {
           attachment: fs.createReadStream(downloadPath),
-          body: `🎵 Title: ${topResult.title}\n\nHere is your audio file 🎧:`,
+          body: `🎶 Title: ${topResult.title}\n\nHere is your audio file 🎧:`,
         },
         event.threadID,
         () => {
-          fs.unlinkSync(downloadPath); // Cleanup after sending
+          fs.unlinkSync(downloadPath); // Cleanup
           api.unsendMessage(processingMessage.messageID);
         },
         event.messageID
       );
     } catch (error) {
-      console.error(`Failed to download and send song: ${error.message}`);
-      api.sendMessage(
-        `❌ Failed to download song: ${error.message}`,
-        event.threadID,
-        event.messageID
-      );
+      console.error(`Error: ${error.message}`);
+      api.sendMessage(`❌ Error: ${error.message}`, event.threadID, event.messageID);
     }
   },
 };
