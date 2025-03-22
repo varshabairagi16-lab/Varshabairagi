@@ -14,10 +14,10 @@ module.exports.onLoad = function () {
     const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
     const { join } = global.nodemodule["path"];
 
-	const path = join(__dirname, "cache", "leaveGif", "randomgif");
+	const path = join(__dirname, "cache", "joinGif", "randomgif");
 	if (existsSync(path)) mkdirSync(path, { recursive: true });	
 
-	const path2 = join(__dirname, "cache", "leaveGif", "randomgif");
+	const path2 = join(__dirname, "cache", "joinGif", "randomgif");
     if (!existsSync(path2)) mkdirSync(path2, { recursive: true });
 
     return;
@@ -45,11 +45,11 @@ module.exports.run = async function({ api, event, Users, Threads }) {
     hours > 10 && hours <= 12 ? "𝐆𝐨𝐨𝐝 𝐀𝐟𝐭𝐞𝐫𝐧𝐨𝐨𝐧 🌹" :
     hours > 12 && hours <= 18 ? "𝐆𝐨𝐨𝐝 𝐄𝐯𝐞𝐧𝐢𝐧𝐠" : "𝐆𝐨𝐨𝐝 𝐍𝐢𝐠𝐡𝐭").replace(/\{time}/g, time);  
 
-	const randomPath = readdirSync(join(__dirname, "cache", "leaveGif", "randomgif"));
+	const randomPath = readdirSync(join(__dirname, "cache", "joinGif", "randomgif"));
 
 	if (existsSync(pathGif)) formPush = { body: msg, attachment: createReadStream(pathGif) }
 	else if (randomPath.length != 0) {
-		const pathRandom = join(__dirname, "cache", "leaveGif", "randomgif",`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
+		const pathRandom = join(__dirname, "cache", "joinGif", "randomgif",`${randomPath[Math.floor(Math.random() * randomPath.length)]}`);
 		formPush = { body: msg, attachment: createReadStream(pathRandom) }
 	}
 	else formPush = { body: msg }
