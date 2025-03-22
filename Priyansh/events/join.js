@@ -1,73 +1,49 @@
 module.exports.config = {
-    name: "joinNoti",
+    name: "join",
     eventType: ["log:subscribe"],
-    version: "1.0.1",
-    credits: "Mirrykal",
-    description: "Welcome message with a random video",
-    dependencies: {}
+    version: "1.2.0",
+    credits: "Priyansh Rajput",
+    description: "Welcomes new members, updates bot nickname, and sends a fun message with a video",
 };
 
-module.exports.run = async function({ api, event }) {
-    const { threadID, logMessageData } = event;
+module.exports.run = async function({ api, event, Users, Threads }) {
+    const { threadID } = event;
+    const userID = event.logMessageData.addedParticipants[0].userFbId;
+    const botID = api.getCurrentUserID();
+    const botName = global.config.BOTNAME || "🔥 Bot 🔥"; // Bot name from config
+    const userName = await Users.getNameUser(userID);
+    
+    // Random Fun Welcome Messages
+    const welcomeMessages = [
+        `👋 Hey ${userName}, welcome to the group! Ab dosti nibhaane ka time aa gaya! 😎`,
+        `🎉 ${userName} aaya hai, masti shuru karo! Yeh group ab aur bhi interesting hone wala hai!`,
+        `🔥 Welcome ${userName}! Ab party shuru hogi!`,
+        `✨ ${userName}, group me welcome! Apna mask utaaro aur asli chehra dikhane ka time aa gaya! 🤣`,
+        `🌟 ${userName}, aakhir aa hi gaye tum! Ab maze hi maze!`
+    ];
+    
+    // Random Instagram Video Links
+    const videoLinks = [
+        "https://i.imgur.com/p8wkPBI.mp4",
+        "https://i.imgur.com/zIoaoc0.mp4",
+        "https://i.imgur.com/tYHkSuj.mp4",
+        "https://i.imgur.com/71Ftuzt.mp4",
+        "https://i.imgur.com/y7GOEob.mp4",
+        "https://i.imgur.com/Q4Yebey.mp4",
+        "https://i.imgur.com/cLBLMpe.mp4"
+    ];
 
-    // ✅ जब Bot को Add किया जाता है
-    if (logMessageData.addedParticipants.some(i => i.userFbId == api.getCurrentUserID())) {
-        const botName = global.config.BOTNAME || "Bot";
-        const prefix = "+"; // Fixed prefix
-        const timeZone = "Asia/Kolkata";
-        const currentTime = new Date().toLocaleString("en-US", { timeZone });
+    // Select Random Message & Video
+    const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+    const randomVideo = videoLinks[Math.floor(Math.random() * videoLinks.length)];
 
-        const botEntryMessage = `🤖 Hello! I'm ${botName}  
-📅 Date & Time: ${currentTime} (IST)  
-🔹 My Prefix: ${prefix}  
-💡 Type ${prefix}help to see my commands!`;
-
-        return api.sendMessage(botEntryMessage, threadID);
-    }
-
-    // ✅ जब कोई नया सदस्य Group में Join करता है
+    // Set Bot Nickname
     try {
-        const { getUserInfo, getThreadInfo } = api;
-        const { participantIDs, threadName } = await getThreadInfo(threadID);
-
-        let nameArray = [];
-        for (const user of logMessageData.addedParticipants) {
-            const userInfo = await getUserInfo(user.userFbId);
-            nameArray.push(userInfo[user.userFbId].name);
-        }
-
-        const randomWelcomeMessages = [
-            `🎉 Welcome, {name}! You're now part of *{threadName}*! Enjoy your stay!`,
-            `✨ {name} has entered the chat! Let's give them a warm welcome in *{threadName}*!`,
-            `🔥 {name} just joined *{threadName}*! Hope you're ready for some fun!`,
-            `👋 Hey {name}, welcome to *{threadName}*! We were expecting you!`,
-            `🚀 {name} has landed in *{threadName}*! Buckle up for an awesome ride!`
-        ];
-
-        const randomVideos = [
-            "https://i.imgur.com/p8wkPBI.mp4",
-            "https://i.imgur.com/zIoaoc0.mp4",
-            "https://i.imgur.com/tYHkSuj.mp4",
-            "https://i.imgur.com/71Ftuzt.mp4",
-            "https://i.imgur.com/y7GOEob.mp4",
-            "https://i.imgur.com/Q4Yebey.mp4",
-            "https://i.imgur.com/cLBLMpe.mp4"
-        ];
-
-        // ✅ Random Video & Message Select करना
-        const welcomeMessage = randomWelcomeMessages[Math.floor(Math.random() * randomWelcomeMessages.length)]
-            .replace("{name}", nameArray.join(", "))
-            .replace("{threadName}", threadName);
-
-        const randomVideo = randomVideos[Math.floor(Math.random() * randomVideos.length)];
-
-        // ✅ Final Message Send करना
-        return api.sendMessage({
-            body: welcomeMessage,
-            attachment: await global.utils.getStreamFromURL(randomVideo)
-        }, threadID);
-
+        api.changeNickname(botName, threadID, botID);
     } catch (error) {
-        console.error("Error in joinNoti script:", error);
+        console.error("Nickname change failed:", error);
     }
+
+    // Send Welcome Message with Video
+    return api.sendMessage({ body: randomMessage, attachment: await global.utils.getStreamFromURL(randomVideo) }, threadID);
 };
