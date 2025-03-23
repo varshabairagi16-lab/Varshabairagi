@@ -1,11 +1,11 @@
 const axios = require("axios");
 
 module.exports.config = {
-    name: "ai",
-    version: "1.0.5",
+    name: "misha",
+    version: "1.3.0",
     hasPermssion: 0,
     credits: "MirryKal",
-    description: "Gemini AI with Memory & Reply Support",
+    description: "Misha AI - Smart Memory & Reply",
     commandCategory: "ai",
     usages: "[ask]",
     cooldowns: 2,
@@ -14,70 +14,63 @@ module.exports.config = {
     }
 };
 
-// 🔹 API URL (Apni API ka link yahan daalo)
-const API_URL = "https://silly-5smc.onrender.com/chat";  
+// 🔹 API URL
+const API_URL = "https://silly-5smc.onrender.com/chat";
 
-// 🔹 User conversation history store karne ka system
+// 🔹 User memory storage
 const chatHistories = {};
+const autoReplyEnabled = {};
 
-module.exports.run = async function ({ api, event, args, Users }) {
-    const { threadID, messageID, senderID, body, type, messageReply } = event;
+// ✅ **Misha Command Function**
+module.exports.run = async function ({ api, event, args }) {
+    const { threadID, messageID, senderID } = event;
+    let userMessage = args.join(" ").toLowerCase();
 
-    var userMessage = args.join(" ");
-
-    // 🔹 Agar AI ke reply pe reply kiya gaya hai toh uska previous conversation yaad rakho
-    const isReplyingToAI = messageReply && chatHistories[senderID] && chatHistories[senderID].length > 0;
-
-    // 🔹 Agar user pehli baar likh raha hai toh history reset ho jayegi
-    if (!chatHistories[senderID]) {
-        chatHistories[senderID] = [];
+    // 🔹 Auto-reply toggle system
+    if (userMessage === "on") {
+        autoReplyEnabled[senderID] = true;
+        return api.sendMessage("Misha auto-reply mode **ON** ho gaya! 😘", threadID);
+    }
+    if (userMessage === "off") {
+        autoReplyEnabled[senderID] = false;
+        return api.sendMessage("Misha auto-reply mode **OFF** kar diya! 🤐", threadID);
     }
 
-    // 🔹 Agar AI ka pehle se koi context hai toh uske sath continue karo
-    if (isReplyingToAI && messageReply.senderID === api.getCurrentUserID()) {
-        userMessage = messageReply.body + "\nUser: " + userMessage; // Pichla AI ka msg bhi bhejna
-        chatHistories[senderID].push(`User: ${userMessage}`);
-    } else {
-        // Naya conversation start ho raha hai, toh purani history delete kar do
-        chatHistories[senderID] = [`User: ${userMessage}`];
-    }
+    if (!userMessage) return;
 
-    // 🔹 Sirf last 5 messages yaad rakho (taaki memory overload na ho)
-    if (chatHistories[senderID].length > 5) {
-        chatHistories[senderID].shift();
-    }
-
-    // 🔹 AI ko pura conversation bhejna
-    const fullConversation = chatHistories[senderID].join("\n");
+    // 🔹 Memory Optimization (Sirf last 6 messages yaad rakho)
+    if (!chatHistories[senderID]) chatHistories[senderID] = [];
+    chatHistories[senderID].push(`User: ${userMessage}`);
+    if (chatHistories[senderID].length > 6) chatHistories[senderID].shift();
 
     // 🔹 AI typing reaction
-    api.setMessageReaction("⌛", event.messageID, () => { }, true);
+    api.setMessageReaction("⌛", messageID, () => {}, true);
 
     try {
-        const response = await axios.get(`${API_URL}?message=${encodeURIComponent(fullConversation)}`);
-
-        const botReply = response.data.reply || "Mujhe samajh nahi aaya. 😕";
+        const response = await axios.get(`${API_URL}?message=${encodeURIComponent(chatHistories[senderID].join("\n"))}&short=true`);
+        let botReply = response.data.reply || "Mujhe samajh nahi aaya. 😕";
 
         // 🔹 AI ka reply history me add karna
-        chatHistories[senderID].push(`AI: ${botReply}`);
+        chatHistories[senderID].push(`${botReply}`);
+        if (chatHistories[senderID].length > 6) chatHistories[senderID].shift();
 
         // 🔹 AI ka response bhejna
         api.sendMessage(botReply, threadID, messageID);
-
-        // 🔹 Reaction update karna
-        api.setMessageReaction("✅", event.messageID, () => { }, true);
+        api.setMessageReaction("✅", messageID, () => {}, true);
     } catch (error) {
         console.error("Error fetching AI response:", error);
-        api.sendMessage("AI response me error aayi, thodi der baad try karo! 😔", threadID, messageID);
+        api.sendMessage("Oops! Koi error aayi, thodi der baad try karo! 😔", threadID, messageID);
+        api.setMessageReaction("❌", messageID, () => {}, true);
     }
 };
 
-// 🔹 Automatic Reply System (Agar koi AI ke reply pe reply kare)
+// ✅ **Auto-Reply System**
 module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, messageID, senderID, body, messageReply } = event;
+    const { threadID, senderID, messageReply, body } = event;
 
-    // 🔹 AI ka reply check karne ke liye
-    if (messageReply && messageReply.senderID === api.getCurrentUserID() && chatHistories[senderID]) {
+    if (!autoReplyEnabled[senderID]) return;
+
+    if (messageReply && messageReply.senderID === api.getCurrentUserID()) {
         const args = body.split(" ");
         module.exports.run({ api, event, args });
     }
