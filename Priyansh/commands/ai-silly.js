@@ -1,51 +1,83 @@
 const axios = require("axios");
-const express = require("express");
-const cors = require("cors");
 
-const config = {
-  name: "chatbase",
-  version: "1.0.0",
-  hasPermission: 0,
-  credits: "Mirrykal",
-  description: "[Chatbase AI]",
-  commandCategory: "no prefix",
-  usages: "Ask a Question From Chatbase AI",
-  cooldowns: 0
-};
-
-const CHATBASE_IFRAME_URL = "https://www.chatbase.co/chatbot-iframe/MILSsaxoDSYQMCAFZDueb";
-
-const handleEvent = async function ({ api, event }) {
-  if (event.body.toLowerCase().startsWith("chatbase")) {
-    const { threadID } = event;
-    const input = event.body;
-    const message = input.split(" ");
-
-    if (message.length < 2) {
-      api.sendMessage("✨ 𝙷𝚎𝚕𝚕𝚘, Type✍🏻 'Chatbase' aur Apna question pucho", threadID);
-    } else {
-      try {
-        api.sendMessage("⏳ Processing...", threadID);
-
-        const text = message.slice(1).join(" ");
-        const encodedText = encodeURIComponent(text);
-
-        // **Chatbase IFrame Scraper (Without API Key)**
-        const response = await axios.get(`${CHATBASE_IFRAME_URL}?q=${encodedText}`);
-
-        if (response.data) {
-          api.sendMessage(response.data, threadID);
-        } else {
-          api.sendMessage("❌ Chatbase से कोई जवाब नहीं मिला!", threadID);
-        }
-      } catch (err) {
-        console.error(err);
-        api.sendMessage("❌ Chatbase से जवाब लाने में दिक्कत हो रही है!", threadID);
-      }
+module.exports.config = {
+    name: "misha",
+    version: "1.0.5",
+    hasPermssion: 0,
+    credits: "MirryKal",
+    description: "Gemini AI with Memory & Reply Support",
+    commandCategory: "ai",
+    usages: "[ask]",
+    cooldowns: 2,
+    dependencies: {
+        "axios": "1.4.0"
     }
-  }
 };
 
-const run = function () {};
+// 🔹 API URL (Apni API ka link yahan daalo)
+const API_URL = "https://silly-5smc.onrender.com/chat";
 
-module.exports = { config, handleEvent, run };
+// 🔹 User conversation history store karne ka system
+const chatHistories = {};
+
+module.exports.run = async function ({ api, event, args, Users }) {
+    const { threadID, messageID, senderID, body, messageReply } = event;
+    let userMessage = args.join(" ");
+
+    // 🔹 Agar AI ke reply pe reply kiya gaya hai toh uska previous conversation yaad rakho
+    const isReplyingToAI = messageReply && chatHistories[senderID] && chatHistories[senderID].length > 0;
+
+    // 🔹 Agar user pehli baar likh raha hai toh history reset ho jayegi
+    if (!chatHistories[senderID]) {
+        chatHistories[senderID] = [];
+    }
+
+    // 🔹 Agar AI ka pehle se koi context hai toh uske sath continue karo
+    if (isReplyingToAI && messageReply.senderID === api.getCurrentUserID()) {
+        userMessage = messageReply.body + "\nUser: " + userMessage; // Pichla AI ka msg bhi bhejna
+        chatHistories[senderID].push(`User: ${userMessage}`);
+    } else {
+        // Naya conversation start ho raha hai, toh purani history delete kar do
+        chatHistories[senderID] = [`User: ${userMessage}`];
+    }
+
+    // 🔹 Sirf last 5 messages yaad rakho (taaki memory overload na ho)
+    if (chatHistories[senderID].length > 5) {
+        chatHistories[senderID].shift();
+    }
+
+    // 🔹 AI ko pura conversation bhejna
+    const fullConversation = chatHistories[senderID].join("\n");
+
+    // 🔹 AI typing reaction
+    api.setMessageReaction("⌛", messageID, () => {}, true);
+
+    try {
+        const response = await axios.get(`${API_URL}?message=${encodeURIComponent(fullConversation)}`);
+        let botReply = response.data.reply || "Mujhe samajh nahi aaya. 😕";
+
+        // 🔹 AI ka reply history me add karna
+        chatHistories[senderID].push(`AI: ${botReply}`);
+
+        // 🔹 AI ka response bhejna
+        api.sendMessage(botReply, threadID, messageID);
+
+        // 🔹 Reaction update karna
+        api.setMessageReaction("✅", messageID, () => {}, true);
+    } catch (error) {
+        console.error("Error fetching AI response:", error);
+        api.sendMessage("AI response me error aayi, thodi der baad try karo! 😔", threadID, messageID);
+        api.setMessageReaction("❌", messageID, () => {}, true);
+    }
+};
+
+// 🔹 Automatic Reply System (Agar koi AI ke reply pe reply kare)
+module.exports.handleEvent = async function ({ api, event }) {
+    const { threadID, messageID, senderID, body, messageReply } = event;
+
+    // 🔹 AI ka reply check karne ke liye
+    if (messageReply && messageReply.senderID === api.getCurrentUserID() && chatHistories[senderID]) {
+        const args = body.split(" ");
+        module.exports.run({ api, event, args });
+    }
+};
