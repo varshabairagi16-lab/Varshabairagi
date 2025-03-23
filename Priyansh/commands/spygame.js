@@ -1,69 +1,55 @@
+const sessions = {}; // यूज़र स्टेट को ट्रैक करने के लिए
+
 module.exports.config = {
-    name: "guess",
-    version: "1.0.3",
-    hasPermission: 0,
-    credits: "MirryKal",
-    description: "A cool math trick that surprises users!",
+    name: "magic",
+    version: "1.0.0",
+    hasPermssion: 0,
+    credits: "Arun Kumar",
+    description: "A mind-reading number trick game.",
     commandCategory: "fun",
-    usages: "",
-    cooldowns: 5
+    usages: "[start]",
+    cooldowns: 2
 };
 
-module.exports.run = async function ({ api, event }) {
-    const { threadID, senderID } = event;
+module.exports.run = async function({ api, event, args }) {
+    const { threadID, senderID, messageID } = event;
 
-    // ✅ Simple random numbers (20, 30, 40, ..., 150)
-    const easyNumbers = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150];
-    const randomNum = easyNumbers[Math.floor(Math.random() * easyNumbers.length)];
-    const halfNum = randomNum / 2;
-
-    const steps = [
-        { msg: "🧠 *Magic Math Trick Start!* 🎩\n\nHey! कोई भी नंबर *1 से 100* के बीच में सोचो।\n\nअगर सोच लिया, तो *YES* लिखो।", wait: true },
-        { msg: "अब अपने दोस्त के लिए *उतना ही* नंबर *ADD* कर दो।\n\nअगर कर लिया, तो *YES* लिखो।", wait: true },
-        { msg: `अब उसमें *${randomNum}* और *ADD* कर दो।\n\nअगर कर लिया, तो *YES* लिखो।`, wait: true },
-        { msg: "जो भी Result आया है, उसका *आधा (Divide by 2)* कर दो।\n\nअगर कर लिया, तो *YES* लिखो।", wait: true },
-        { msg: "अब जो तुमने अपने दोस्त के लिए नंबर Add किया था, उसे *minus* कर दो।\n\nअगर कर लिया, तो *YES* लिखो।", wait: true },
-        { msg: `🎉 *तुम्हारा उत्तर* = *${halfNum}* 🎩✨`, wait: false }
-    ];
-
-    let currentStep = 0;
-
-    const sendStep = async () => {
-        if (currentStep < steps.length) {
-            api.sendMessage(steps[currentStep].msg, senderID, (err, info) => {
-                if (!err && steps[currentStep].wait) {
-                    global.client.handleReply.push({
-                        name: module.exports.config.name,
-                        messageID: info.messageID,
-                        author: senderID,
-                        step: currentStep
-                    });
-                }
-            });
-        }
-    };
-
-    global.client.handleReply = global.client.handleReply || [];
-    global.client.handleReply.push({
-        name: module.exports.config.name,
-        messageID: event.messageID,
-        author: senderID,
-        step: currentStep
-    });
-
-    sendStep();
+    if (!sessions[senderID]) {
+        sessions[senderID] = { step: 1 };
+        return api.sendMessage("Hey! सोचो कोई भी नंबर 1 से 100 तक! 🤔\n\nअगर सोच लिया तो *reply* में 'Yes' लिखो।", threadID, messageID);
+    }
 };
 
-module.exports.handleReply = async function ({ api, event, handleReply }) {
-    const { senderID, body } = event;
+module.exports.handleReply = async function({ api, event }) {
+    const { senderID, threadID, messageID, body } = event;
+    if (!sessions[senderID]) return;
 
-    if (handleReply.author !== senderID || body.toLowerCase() !== "yes") return;
+    const userSession = sessions[senderID];
 
-    handleReply.step++;
-
-    if (handleReply.step < 5) {
-        api.sendMessage("✔ Great! Next step:", senderID);
+    if (userSession.step === 1 && body.toLowerCase() === "yes") {
+        userSession.step = 2;
+        return api.sendMessage("अब उस नंबर में अपने दोस्त का भी उतना ही नंबर जोड़ दो! 😊\n\nअगर जोड़ लिया तो 'Done' लिखो।", threadID, messageID);
     }
 
-    module.exports.run({ api, event: { threadID: senderID, senderID } });
+    if (userSession.step === 2 && body.toLowerCase() === "done") {
+        userSession.step = 3;
+        userSession.randomAdd = [20, 30, 40, 50, 60, 80, 100, 120][Math.floor(Math.random() * 8)]; // Random नंबर चुनना
+        return api.sendMessage(`अब उसमें *${userSession.randomAdd}* और जोड़ दो! 🔢\n\nअगर जोड़ लिया तो 'OK' लिखो।`, threadID, messageID);
+    }
+
+    if (userSession.step === 3 && body.toLowerCase() === "ok") {
+        userSession.step = 4;
+        return api.sendMessage("अब जो भी answer आया है, उसका आधा निकालकर admin को दे दो! 🧮\n\nअगर कर लिया तो 'Next' लिखो।", threadID, messageID);
+    }
+
+    if (userSession.step === 4 && body.toLowerCase() === "next") {
+        userSession.step = 5;
+        return api.sendMessage("अब जो दोस्त का नंबर था, उसे वापस हटा दो (minus करो)!\n\nअगर कर लिया तो 'Finish' लिखो।", threadID, messageID);
+    }
+
+    if (userSession.step === 5 && body.toLowerCase() === "finish") {
+        const answer = userSession.randomAdd / 2; // Answer निकालना
+        delete sessions[senderID]; // Session को खत्म करना
+        return api.sendMessage(`🎉 तुम्हारा जवाब *${answer}* है! सही था ना? 😉`, threadID, messageID);
+    }
 };
