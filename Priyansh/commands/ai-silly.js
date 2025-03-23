@@ -2,10 +2,10 @@ const axios = require("axios");
 
 module.exports.config = {
     name: "misha",
-    version: "1.0.7",
+    version: "1.0.9",
     hasPermssion: 0,
     credits: "MirryKal",
-    description: "Gemini AI with Memory, Reply Support & Fun Mode (Ladki Style)",
+    description: "Misha AI with Memory, Reply Support & Fun Mode (Ladki Style)",
     commandCategory: "ai",
     usages: "[ask]",
     cooldowns: 2,
@@ -14,55 +14,43 @@ module.exports.config = {
     }
 };
 
-// 🔹 API URL (Apni API ka link yahan daalo)
+// 🔹 API URL
 const API_URL = "https://silly-5smc.onrender.com/chat";
 
-// 🔹 User conversation history store karne ka system
+// 🔹 User conversation history & auto-reply mode
 const chatHistories = {};
 const autoReplyEnabled = {};
 
 // ✅ **AI Command Function**
-module.exports.run = async function ({ api, event, args, Users }) {
-    const { threadID, messageID, senderID, messageReply } = event;
-    let userMessage = args.join(" ");
+module.exports.run = async function ({ api, event, args }) {
+    const { threadID, messageID, senderID } = event;
+    let userMessage = args.join(" ").toLowerCase();
 
     // 🔹 Auto-reply toggle system
-    if (userMessage.toLowerCase() === "on") {
+    if (userMessage === "on") {
         autoReplyEnabled[senderID] = true;
-        return api.sendMessage("Hyee! 😘 AI auto-reply mode **ON** ho gaya baby! 💖", threadID, messageID);
+        return api.sendMessage("Hyee! 😘 Misha auto-reply mode **ON** ho gaya baby! 💖", threadID);
     }
-    if (userMessage.toLowerCase() === "off") {
+    if (userMessage === "off") {
         autoReplyEnabled[senderID] = false;
-        return api.sendMessage("Uff! 😒 AI auto-reply mode **OFF** kar diya baby! 🤐", threadID, messageID);
+        return api.sendMessage("Uff! 😒 Misha auto-reply mode **OFF** kar diya baby! 🤐", threadID);
     }
 
-    // 🔹 User history store system
-    if (!chatHistories[senderID]) {
-        chatHistories[senderID] = [];
-    }
+    // 🔹 Misha AI response system
+    if (!userMessage) return api.sendMessage("Haanji baby? Bolo kya baat hai? 😘", threadID, messageID);
 
-    // 🔹 Agar AI ka pehle se koi context hai toh uske sath continue karo
-    const isReplyingToAI = messageReply && chatHistories[senderID] && chatHistories[senderID].length > 0;
-    if (isReplyingToAI && messageReply.senderID === api.getCurrentUserID()) {
-        userMessage = messageReply.body + "\nUser: " + userMessage;
-        chatHistories[senderID].push(`User: ${userMessage}`);
-    } else {
-        chatHistories[senderID] = [`User: ${userMessage}`];
-    }
+    // 🔹 Conversation history store
+    if (!chatHistories[senderID]) chatHistories[senderID] = [];
 
     // 🔹 Sirf last 5 messages yaad rakho
-    if (chatHistories[senderID].length > 5) {
-        chatHistories[senderID].shift();
-    }
-
-    // 🔹 AI ko pura conversation bhejna
-    const fullConversation = chatHistories[senderID].join("\n");
+    chatHistories[senderID].push(`User: ${userMessage}`);
+    if (chatHistories[senderID].length > 5) chatHistories[senderID].shift();
 
     // 🔹 AI typing reaction
     api.setMessageReaction("⌛", messageID, () => {}, true);
 
     try {
-        const response = await axios.get(`${API_URL}?message=${encodeURIComponent(fullConversation)}`);
+        const response = await axios.get(`${API_URL}?message=${encodeURIComponent(chatHistories[senderID].join("\n"))}`);
         let botReply = response.data.reply || "Uff! Mujhe samajh nahi aaya baby! 😕";
 
         // 🔹 Fun Mode - Ladki Style
@@ -93,11 +81,11 @@ module.exports.run = async function ({ api, event, args, Users }) {
 
 // ✅ **Auto-Reply System (Reply pe AI reply de)**
 module.exports.handleEvent = async function ({ api, event }) {
-    const { threadID, messageID, senderID, body, messageReply } = event;
+    const { threadID, senderID, messageReply, body } = event;
 
     if (!autoReplyEnabled[senderID]) return;
 
-    if (messageReply && messageReply.senderID === api.getCurrentUserID() && chatHistories[senderID]) {
+    if (messageReply && messageReply.senderID === api.getCurrentUserID()) {
         const args = body.split(" ");
         module.exports.run({ api, event, args });
     }
