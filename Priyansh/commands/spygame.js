@@ -3,54 +3,65 @@ module.exports.config = {
     version: "1.0.0",
     hasPermssion: 0,
     credits: "MirryKal",
-    description: "A magic trick game using reactions!",
+    description: "A mind-reading magic trick game.",
     commandCategory: "fun",
     usages: "",
     cooldowns: 5
 };
 
-let gameState = {}; // हर यूज़र का स्टेट ट्रैक करने के लिए
-let randomNum = 0; // जो नंबर बॉट एड करवाएगा
+const userSteps = {}; // हर यूजर का स्टेप track करने के लिए
 
-module.exports.run = async function({ api, event }) {
-    let { threadID, senderID } = event;
+module.exports.run = async function ({ api, event }) {
+    const { threadID, senderID } = event;
 
-    randomNum = Math.floor(Math.random() * 7) * 10 + 30; // 30 से 150 तक कोई एक नंबर
-    
-    gameState[senderID] = { step: 1 };
+    userSteps[senderID] = { step: 1, number: null, added: null };
 
-    return api.sendMessage(
-        "Hey! सोचो कोई भी नंबर 1 से 100 तक! 🤔\n\nअगर सोच लिया तो *कोई भी reaction दो*।",
-        threadID,
-        (err, info) => {
-            gameState[senderID].msgID = info.messageID;
-        }
-    );
+    return api.sendMessage("🎩 Magic Trick शुरू होने वाली है!\n\n🤔 कोई भी एक नंबर सोचो 1 से 100 तक।\n\n✔️ जब सोच लो, तो इस मैसेज पर कोई भी reaction दो।", threadID, (err, info) => {
+        userSteps[senderID].messageID = info.messageID;
+    });
 };
 
-module.exports.handleReaction = async function({ api, event }) {
-    let { threadID, messageID, userID } = event;
+module.exports.handleEvent = async function ({ api, event }) {
+    const { threadID, senderID, messageID, body, reaction } = event;
 
-    if (!gameState[userID] || gameState[userID].msgID !== messageID) return;
+    if (!userSteps[senderID]) return;
 
-    if (gameState[userID].step === 1) {
-        api.sendMessage("अच्छा! अब अपने दोस्त के लिए उतना ही नंबर add करो जितना सोचा था।", threadID);
-        gameState[userID].step = 2;
-    } 
-    else if (gameState[userID].step === 2) {
-        api.sendMessage(`अब उसमें *${randomNum}* add करो।`, threadID);
-        gameState[userID].step = 3;
-    } 
-    else if (gameState[userID].step === 3) {
-        api.sendMessage("अब जो result आया है, उसका आधा Admin को दे दो।", threadID);
-        gameState[userID].step = 4;
-    } 
-    else if (gameState[userID].step === 4) {
-        api.sendMessage("अब अपने दोस्त वाला नंबर वापिस घटा दो!", threadID);
-        gameState[userID].step = 5;
-    } 
-    else if (gameState[userID].step === 5) {
-        api.sendMessage(`तुम्हारा answer *${randomNum / 2}* है! 🎩`, threadID);
-        delete gameState[userID]; // गेम खत्म
+    const step = userSteps[senderID].step;
+
+    if (reaction && messageID === userSteps[senderID].messageID) {
+        switch (step) {
+            case 1:
+                userSteps[senderID].step++;
+                return api.sendMessage("👥 अब अपने दोस्त के लिए भी उतना ही नंबर जोड़ दो जितना तुमने सोचा था।\n\n✔️ जब कर लो, तो इस मैसेज पर कोई भी reaction दो।", threadID, (err, info) => {
+                    userSteps[senderID].messageID = info.messageID;
+                });
+
+            case 2:
+                const randomAdd = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150][Math.floor(Math.random() * 13)];
+                userSteps[senderID].added = randomAdd;
+                userSteps[senderID].step++;
+                return api.sendMessage(`➕ अब जो भी नंबर आया उसमें *${randomAdd}* जोड़ दो।\n\n✔️ जब कर लो, तो इस मैसेज पर कोई भी reaction दो।`, threadID, (err, info) => {
+                    userSteps[senderID].messageID = info.messageID;
+                });
+
+            case 3:
+                userSteps[senderID].step++;
+                return api.sendMessage("⚖️ अब जो भी total आया है, उसका आधा कर दो और admin को बता दो।\n\n✔️ जब कर लो, तो इस मैसेज पर कोई भी reaction दो।", threadID, (err, info) => {
+                    userSteps[senderID].messageID = info.messageID;
+                });
+
+            case 4:
+                userSteps[senderID].step++;
+                return api.sendMessage("➖ अब जो भी नंबर तुमने अपने दोस्त के लिए जोड़ा था, उसे वापस घटा दो।\n\n✔️ जब कर लो, तो इस मैसेज पर कोई भी reaction दो।", threadID, (err, info) => {
+                    userSteps[senderID].messageID = info.messageID;
+                });
+
+            case 5:
+                const answer = userSteps[senderID].added / 2;
+                delete userSteps[senderID]; // डेटा क्लियर कर दिया
+                return api.sendMessage(`🎩 Great Job! 🎩\n\nतुम्हारा Answer *${answer}* है! 🤯🔥\n\nअगर trick पसंद आई तो *WOW* भेजो!`, threadID);
+        }
     }
 };
+
+module.exports.handleReaction = module.exports.handleEvent;
