@@ -42,7 +42,7 @@ module.exports.run = async function ({ api, event, args, Users }) {
     }
 
     // 🔹 Sirf last 5 messages yaad rakho (taaki memory overload na ho)
-    if (chatHistories[senderID].length > 5) {
+    if (chatHistories[senderID].length > 9) {
         chatHistories[senderID].shift();
     }
 
@@ -57,7 +57,7 @@ module.exports.run = async function ({ api, event, args, Users }) {
         let botReply = response.data.reply || "Mujhe samajh nahi aaya. 😕";
 
         // 🔹 AI ka reply history me add karna
-        chatHistories[senderID].push(`AI: ${botReply}`);
+        chatHistories[senderID].push(`${botReply}`);
 
         // 🔹 AI ka response bhejna
         api.sendMessage(botReply, threadID, messageID);
