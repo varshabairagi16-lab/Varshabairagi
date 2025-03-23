@@ -1,8 +1,8 @@
 const axios = require("axios");
 
 module.exports.config = {
-    name: "misha",
-    version: "1.0.4",
+    name: "ai",
+    version: "1.0.5",
     hasPermssion: 0,
     credits: "MirryKal",
     description: "Gemini AI with Memory & Reply Support",
@@ -25,7 +25,7 @@ module.exports.run = async function ({ api, event, args, Users }) {
 
     var userMessage = args.join(" ");
 
-    // 🔹 Agar user kisi AI ke reply ka reply kar raha hai, toh uska previous conversation yaad rakho
+    // 🔹 Agar AI ke reply pe reply kiya gaya hai toh uska previous conversation yaad rakho
     const isReplyingToAI = messageReply && chatHistories[senderID] && chatHistories[senderID].length > 0;
 
     // 🔹 Agar user pehli baar likh raha hai toh history reset ho jayegi
@@ -34,7 +34,7 @@ module.exports.run = async function ({ api, event, args, Users }) {
     }
 
     // 🔹 Agar AI ka pehle se koi context hai toh uske sath continue karo
-    if (isReplyingToAI) {
+    if (isReplyingToAI && messageReply.senderID === api.getCurrentUserID()) {
         userMessage = messageReply.body + "\nUser: " + userMessage; // Pichla AI ka msg bhi bhejna
         chatHistories[senderID].push(`User: ${userMessage}`);
     } else {
@@ -76,8 +76,8 @@ module.exports.run = async function ({ api, event, args, Users }) {
 module.exports.handleEvent = async function ({ api, event }) {
     const { threadID, messageID, senderID, body, messageReply } = event;
 
-    // 🔹 Agar AI ke reply pe reply kiya gaya hai
-    if (messageReply && chatHistories[senderID] && chatHistories[senderID].length > 0) {
+    // 🔹 AI ka reply check karne ke liye
+    if (messageReply && messageReply.senderID === api.getCurrentUserID() && chatHistories[senderID]) {
         const args = body.split(" ");
         module.exports.run({ api, event, args });
     }
