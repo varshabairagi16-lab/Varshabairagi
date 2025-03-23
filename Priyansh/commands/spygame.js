@@ -1,55 +1,56 @@
-const sessions = {}; // यूज़र स्टेट को ट्रैक करने के लिए
-
 module.exports.config = {
     name: "magic",
     version: "1.0.0",
     hasPermssion: 0,
-    credits: "Arun Kumar",
-    description: "A mind-reading number trick game.",
+    credits: "MirryKal",
+    description: "A magic trick game using reactions!",
     commandCategory: "fun",
-    usages: "[start]",
-    cooldowns: 2
+    usages: "",
+    cooldowns: 5
 };
 
-module.exports.run = async function({ api, event, args }) {
-    const { threadID, senderID, messageID } = event;
+let gameState = {}; // हर यूज़र का स्टेट ट्रैक करने के लिए
+let randomNum = 0; // जो नंबर बॉट एड करवाएगा
 
-    if (!sessions[senderID]) {
-        sessions[senderID] = { step: 1 };
-        return api.sendMessage("Hey! सोचो कोई भी नंबर 1 से 100 तक! 🤔\n\nअगर सोच लिया तो *reply* में 'Yes' लिखो।", threadID, messageID);
-    }
+module.exports.run = async function({ api, event }) {
+    let { threadID, senderID } = event;
+
+    randomNum = Math.floor(Math.random() * 7) * 10 + 30; // 30 से 150 तक कोई एक नंबर
+    
+    gameState[senderID] = { step: 1 };
+
+    return api.sendMessage(
+        "Hey! सोचो कोई भी नंबर 1 से 100 तक! 🤔\n\nअगर सोच लिया तो *कोई भी reaction दो*।",
+        threadID,
+        (err, info) => {
+            gameState[senderID].msgID = info.messageID;
+        }
+    );
 };
 
-module.exports.handleReply = async function({ api, event }) {
-    const { senderID, threadID, messageID, body } = event;
-    if (!sessions[senderID]) return;
+module.exports.handleReaction = async function({ api, event }) {
+    let { threadID, messageID, userID } = event;
 
-    const userSession = sessions[senderID];
+    if (!gameState[userID] || gameState[userID].msgID !== messageID) return;
 
-    if (userSession.step === 1 && body.toLowerCase() === "yes") {
-        userSession.step = 2;
-        return api.sendMessage("अब उस नंबर में अपने दोस्त का भी उतना ही नंबर जोड़ दो! 😊\n\nअगर जोड़ लिया तो 'Done' लिखो।", threadID, messageID);
-    }
-
-    if (userSession.step === 2 && body.toLowerCase() === "done") {
-        userSession.step = 3;
-        userSession.randomAdd = [20, 30, 40, 50, 60, 80, 100, 120][Math.floor(Math.random() * 8)]; // Random नंबर चुनना
-        return api.sendMessage(`अब उसमें *${userSession.randomAdd}* और जोड़ दो! 🔢\n\nअगर जोड़ लिया तो 'OK' लिखो।`, threadID, messageID);
-    }
-
-    if (userSession.step === 3 && body.toLowerCase() === "ok") {
-        userSession.step = 4;
-        return api.sendMessage("अब जो भी answer आया है, उसका आधा निकालकर admin को दे दो! 🧮\n\nअगर कर लिया तो 'Next' लिखो।", threadID, messageID);
-    }
-
-    if (userSession.step === 4 && body.toLowerCase() === "next") {
-        userSession.step = 5;
-        return api.sendMessage("अब जो दोस्त का नंबर था, उसे वापस हटा दो (minus करो)!\n\nअगर कर लिया तो 'Finish' लिखो।", threadID, messageID);
-    }
-
-    if (userSession.step === 5 && body.toLowerCase() === "finish") {
-        const answer = userSession.randomAdd / 2; // Answer निकालना
-        delete sessions[senderID]; // Session को खत्म करना
-        return api.sendMessage(`🎉 तुम्हारा जवाब *${answer}* है! सही था ना? 😉`, threadID, messageID);
+    if (gameState[userID].step === 1) {
+        api.sendMessage("अच्छा! अब अपने दोस्त के लिए उतना ही नंबर add करो जितना सोचा था।", threadID);
+        gameState[userID].step = 2;
+    } 
+    else if (gameState[userID].step === 2) {
+        api.sendMessage(`अब उसमें *${randomNum}* add करो।`, threadID);
+        gameState[userID].step = 3;
+    } 
+    else if (gameState[userID].step === 3) {
+        api.sendMessage("अब जो result आया है, उसका आधा Admin को दे दो।", threadID);
+        gameState[userID].step = 4;
+    } 
+    else if (gameState[userID].step === 4) {
+        api.sendMessage("अब अपने दोस्त वाला नंबर वापिस घटा दो!", threadID);
+        gameState[userID].step = 5;
+    } 
+    else if (gameState[userID].step === 5) {
+        api.sendMessage(`तुम्हारा answer *${randomNum / 2}* है! 🎩`, threadID);
+        delete gameState[userID]; // गेम खत्म
     }
 };
