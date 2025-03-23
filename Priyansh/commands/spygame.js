@@ -2,119 +2,87 @@ const axios = require("axios");
 
 module.exports.config = {
     name: "spygame",
-    version: "1.0.4",
+    version: "1.3.0",
     hasPermission: 0,
     credits: "MirryKal",
-    description: "A fun spy game for group chats with auto-player inclusion!",
+    description: "Play the Spy Game in chat",
     commandCategory: "games",
-    usages: "+spygame @players",
+    usages: "[mentions]",
     cooldowns: 5
 };
 
-const wordCategories = {
-    "Fruits": ["Apple", "Banana", "Mango", "Pineapple", "Grapes", "Strawberry", "Watermelon", "Peach", "Guava", "Pomegranate"],
-    "Animals": ["Lion", "Tiger", "Elephant", "Cheetah", "Leopard", "Kangaroo", "Giraffe", "Zebra", "Panda", "Wolf"],
-    "Sports": ["Football", "Cricket", "Basketball", "Tennis", "Hockey", "Volleyball", "Badminton", "Golf", "Wrestling", "Boxing"],
-    "Vehicles": ["Car", "Bike", "Train", "Aeroplane", "Bus", "Truck", "Scooter", "Ship", "Tractor", "Bicycle"],
-    "Jobs": ["Doctor", "Engineer", "Teacher", "Scientist", "Police", "Lawyer", "Chef", "Pilot", "Actor", "Writer"],
-    "Beverages": ["Tea", "Coffee", "Juice", "Milk", "Soda", "Wine", "Beer", "Coconut Water", "Smoothie", "Energy Drink"]
+const sendMessageToUID = async (userID, message) => {
+    try {
+        await axios.post("http://localhost:PORT/send-message", { 
+            uid: userID, 
+            message: message 
+        });
+    } catch (error) {
+        console.error(`❌ Error sending message to ${userID}:`, error);
+    }
 };
 
+// Categories with 10 words each
+const categories = {
+    "Food": ["Pizza", "Burger", "Pasta", "Sushi", "Tacos", "Sandwich", "Salad", "Noodles", "Biryani", "Steak"],
+    "Sports": ["Football", "Basketball", "Tennis", "Cricket", "Hockey", "Baseball", "Boxing", "Golf", "Cycling", "Swimming"],
+    "Nature": ["River", "Mountain", "Forest", "Desert", "Ocean", "Waterfall", "Valley", "Island", "Cave", "Glacier"],
+    "Animals": ["Lion", "Tiger", "Elephant", "Giraffe", "Panda", "Kangaroo", "Dolphin", "Cheetah", "Wolf", "Eagle"],
+    "Technology": ["Laptop", "Smartphone", "Keyboard", "Mouse", "Router", "Headphones", "Camera", "Monitor", "Drone", "Speaker"],
+    "Movies": ["Inception", "Titanic", "Avatar", "Gladiator", "Interstellar", "Joker", "Parasite", "The Matrix", "Godfather", "Frozen"]
+};
+
+// Active games (to track turns)
+const activeGames = {};
+
 module.exports.run = async function ({ api, event, args }) {
-    const { threadID, messageID, mentions, senderID } = event;
-
-    // 🏆 Auto-Include Command User
-    let players = Object.keys(mentions);
-    if (!players.includes(senderID)) {
-        players.push(senderID);
-    }
-
-    if (players.length < 3 || players.length > 6) {
-        return api.sendMessage("⚠ कम से कम 3 और अधिकतम 6 प्लेयर्स मेंशन करें!", threadID, messageID);
-    }
-
-    const categories = Object.keys(wordCategories);
-    const chosenCategory = categories[Math.floor(Math.random() * categories.length)];
-    let words = [...wordCategories[chosenCategory]];
-
-    let spyIndex = Math.floor(Math.random() * players.length);
-    let spy = players[spyIndex];
-    let wordForSpy = words[Math.floor(Math.random() * words.length)];
-    let assignedWords = {};
-
-    players.forEach((player, index) => {
-        assignedWords[player] = index === spyIndex ? wordForSpy : words[0];
-    });
-
-    api.sendMessage(`🎭 *Spy Game शुरू हो चुका है!*\n\n**श्रेणी:** ${chosenCategory}\n📢 हर खिलाड़ी को अपने शब्द को समझाना होगा, लेकिन शब्द नहीं बताना है!\n\n🔍 *Bot अब सभी प्लेयर्स को उनके शब्द भेज रहा है...*`, threadID);
-
-    // 🔥 Async function for DM
-    const sendWordToPlayer = async (playerID, word) => {
-        try {
-            await api.sendMessage(`🤫 आपका गुप्त शब्द: *${word}*`, playerID);
-        } catch (err) {
-            api.sendMessage(`⚠ *${mentions[playerID] || "Player"}* को DM नहीं भेज सका, उनका शब्द है: *${word}*`, threadID);
-        }
-    };
-
-    for (let playerID of players) {
-        await sendWordToPlayer(playerID, assignedWords[playerID]);
-    }
-
-    api.sendMessage(`✅ सभी प्लेयर्स को उनके शब्द मिल चुके हैं! बोट अब बारी-बारी से प्लेयर्स को बुलाएगा।`, threadID);
-
-    let playerTurn = 0;
+    const { threadID, messageID, senderID, mentions } = event;
+    const players = Object.keys(mentions);
     
-    // 🎯 Function to ask players to explain their word
-    const playTurn = () => {
-        if (playerTurn >= players.length) {
-            return startVoting();
-        }
-        let player = players[playerTurn];
-        playerTurn++;
+    if (players.length < 2 || players.length > 5) {
+        return api.sendMessage("⚠️ Please mention 2-5 players!", threadID, messageID);
+    }
 
-        api.sendMessage(`📢 *${mentions[player] || "Player"}*, अपने शब्द को **एक वाक्य में समझाओ!**`, threadID, (err, info) => {
-            if (!err) {
-                let messageID = info.messageID;
-                // ⏳ 30 सेकंड का टाइम मिलेगा जवाब देने के लिए
-                setTimeout(() => {
-                    api.getMessageInfo(messageID, (err, msgInfo) => {
-                        if (err || !msgInfo.body) {
-                            api.sendMessage(`⚠ *${mentions[player] || "Player"}* ने कोई जवाब नहीं दिया!`, threadID);
-                        }
-                        // 🔄 अगले प्लेयर को बुलाओ
-                        playTurn();
-                    });
-                }, 30000);
-            }
-        });
-    };
+    players.push(senderID); // Include the sender
 
-    // 🗳 Voting Function
-    const startVoting = () => {
-        api.sendMessage(`🔍 **अब वोटिंग शुरू होगी!**\n\n👉 जिस प्लेयर को आप **Spy** समझते हैं, उसके मैसेज पर ❌ रिएक्शन दें।\n\n⏳ वोटिंग 30 सेकंड में ख़त्म होगी।`, threadID);
-        
-        setTimeout(() => {
-            api.getThreadInfo(threadID, (err, info) => {
-                if (err) return api.sendMessage("⚠ वोटिंग में कुछ समस्या हुई!", threadID);
+    const categoryNames = Object.keys(categories);
+    const chosenCategory = categoryNames[Math.floor(Math.random() * categoryNames.length)];
+    const words = [...categories[chosenCategory]];
 
-                let maxVotes = 0;
-                let accused = "";
-                for (let reaction of info.message_reactions) {
-                    if (reaction.reaction === "❌" && reaction.count > maxVotes) {
-                        maxVotes = reaction.count;
-                        accused = reaction.userID;
-                    }
-                }
+    if (words.length < players.length) {
+        return api.sendMessage("❌ Not enough words available!", threadID, messageID);
+    }
 
-                if (accused === spy) {
-                    api.sendMessage(`✅ **बधाई हो!** आप सही थे! **${mentions[spy] || "Spy"}** असली Spy निकला!`, threadID);
-                } else {
-                    api.sendMessage(`❌ गलत वोटिंग! असली Spy **${mentions[spy] || "Spy"}** था!`, threadID);
-                }
-            });
-        }, 30000);
-    };
+    let selectedWords = words.sort(() => 0.5 - Math.random()).slice(0, players.length);
+    let spyIndex = Math.floor(Math.random() * players.length);
+    let spyWord = "❓ (You are the Spy! Figure out others' words.)";
+    
+    for (let i = 0; i < players.length; i++) {
+        const playerID = players[i];
+        const word = i === spyIndex ? spyWord : selectedWords[i];
 
-    setTimeout(playTurn, 5000);
+        await sendMessageToUID(playerID, `🕵️‍♂️ Your Secret Word: *${word}*\n🔍 Category: ${chosenCategory}`);
+    }
+
+    activeGames[threadID] = { players, currentTurn: 0, category: chosenCategory };
+
+    api.sendMessage(`🎭 **Spy Game Started!** 🎭\n🔹 **Category:** ${chosenCategory}\n📝 All players have received their secret words.\n\n👉 **${mentions[players[0]] || "First player"}**, please explain your word!`, threadID, messageID);
+};
+
+// Handle Player Turns
+module.exports.handleEvent = async function ({ api, event }) {
+    const { threadID, senderID, body } = event;
+    
+    if (!activeGames[threadID]) return;
+    let game = activeGames[threadID];
+
+    if (senderID !== game.players[game.currentTurn]) return;
+
+    game.currentTurn++;
+
+    if (game.currentTurn < game.players.length) {
+        api.sendMessage(`✅ **Next Player:** ${game.players[game.currentTurn]}\nPlease explain your word!`, threadID);
+    } else {
+        api.sendMessage("🎭 **All players have explained their words!**\n🗳️ Time to vote! React to the person you think is the Spy.", threadID);
+    }
 };
