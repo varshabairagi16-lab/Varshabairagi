@@ -2,57 +2,56 @@ const axios = require("axios");
 
 module.exports.config = {
     name: "wiki",
-    version: "2.0",
-    hasPermission: 0,
+    version: "2.0.0",
+    hasPermssion: 0,
     credits: "MirryKal",
-    description: "Search anything on Wikipedia with language support!",
-    commandCategory: "study",
-    usages: "[query] [language_code]",
-    cooldowns: 3
+    description: "Get Wikipedia search results with image and multilingual support",
+    commandCategory: "information",
+    usages: "[query] [language_code (optional)]",
+    cooldowns: 2
 };
 
-module.exports.run = async function({ api, event, args }) {
-    if (!args[0]) {
-        return api.sendMessage("बोलो न, क्या सर्च करना है? 😜", event.threadID, event.messageID);
+module.exports.run = async function ({ api, event, args }) {
+    const { threadID, messageID } = event;
+    
+    if (args.length === 0) {
+        return api.sendMessage("⚠ कृपया कोई टॉपिक दर्ज करें जिसे आप Wikipedia पर खोजना चाहते हैं!", threadID, messageID);
     }
 
-    // 🔹 Check if last argument is a language code (e.g., "hi", "en", "fr")
-    let langCode = "en";  // Default is English
-    const lastArg = args[args.length - 1].toLowerCase();
-    const validLangs = ["hi", "en", "fr", "es", "de", "ru", "zh", "ja"]; // Add more as needed
-
-    if (validLangs.includes(lastArg)) {
-        langCode = lastArg;
-        args.pop(); // Remove language code from the query
-    }
-
+    let lang = "en"; // Default English
     let query = args.join(" ");
-    let apiUrl = `https://${langCode}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts|pageimages&exintro=true&explaintext=true&pithumbsize=500&generator=search&gsrsearch=${encodeURIComponent(query)}`;
+
+    // अगर लास्ट में language code दिया गया है तो उसे अलग कर लो
+    if (args.length > 1) {
+        const lastArg = args[args.length - 1];
+        if (/^[a-z]{2}$/.test(lastArg)) {
+            lang = lastArg;
+            query = args.slice(0, -1).join(" ");
+        }
+    }
+
+    const API_URL = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
 
     try {
-        const response = await axios.get(apiUrl);
-        const pages = response.data.query?.pages;
+        const res = await axios.get(API_URL);
+        const data = res.data;
 
-        if (!pages) {
-            return api.sendMessage(`Oops! 🤔 "${query}" के बारे में कुछ नहीं मिला!`, event.threadID, event.messageID);
+        if (!data.extract) {
+            throw new Error("No content found");
         }
 
-        // 🔹 Pick the first available page
-        const page = Object.values(pages)[0];
-        const title = page.title || "No Title";
-        const extract = page.extract ? page.extract.substring(0, 400) + "..." : "कोई जानकारी उपलब्ध नहीं।";
-        const imageUrl = page.thumbnail?.source || null;
-        const wikiUrl = `https://${langCode}.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+        let response = `📖 *${data.title}*\n\n${data.extract}\n\n🌐 और पढ़ें: ${data.content_urls.desktop.page}`;
 
-        let message = `📚 *${title}*\n\n${extract}\n\n🔗 अधिक जानकारी: ${wikiUrl}`;
-
-        if (imageUrl) {
-            return api.sendMessage({ body: message, attachment: await global.utils.getStreamFromURL(imageUrl) }, event.threadID, event.messageID);
+        if (data.thumbnail?.source) {
+            return api.sendMessage({
+                body: response,
+                attachment: await global.utils.getStreamFromURL(data.thumbnail.source)
+            }, threadID, messageID);
         } else {
-            return api.sendMessage(message, event.threadID, event.messageID);
+            return api.sendMessage(response, threadID, messageID);
         }
+
     } catch (error) {
-        console.error("Wikipedia Error:", error);
-        return api.sendMessage("Oops! Wikipedia से डेटा लाने में दिक्कत आ रही है। थोड़ी देर में try करो! 🤕", event.threadID, event.messageID);
+        return api.sendMessage(`❌ Wikipedia पर *${query}* से संबंधित कोई जानकारी नहीं मिली।`, threadID, messageID);
     }
 };
