@@ -2,10 +2,10 @@ const axios = require("axios");
 
 module.exports.config = {
     name: "spygame",
-    version: "1.0.1",
+    version: "1.0.4",
     hasPermission: 0,
     credits: "MirryKal",
-    description: "A fun spy game for group chats with 6 categories and 10 words each!",
+    description: "A fun spy game for group chats with auto-player inclusion!",
     commandCategory: "games",
     usages: "+spygame @players",
     cooldowns: 5
@@ -21,9 +21,15 @@ const wordCategories = {
 };
 
 module.exports.run = async function ({ api, event, args }) {
-    const { threadID, messageID, mentions } = event;
+    const { threadID, messageID, mentions, senderID } = event;
 
-    if (Object.keys(mentions).length < 3 || Object.keys(mentions).length > 6) {
+    // 🏆 Auto-Include Command User
+    let players = Object.keys(mentions);
+    if (!players.includes(senderID)) {
+        players.push(senderID);
+    }
+
+    if (players.length < 3 || players.length > 6) {
         return api.sendMessage("⚠ कम से कम 3 और अधिकतम 6 प्लेयर्स मेंशन करें!", threadID, messageID);
     }
 
@@ -31,30 +37,35 @@ module.exports.run = async function ({ api, event, args }) {
     const chosenCategory = categories[Math.floor(Math.random() * categories.length)];
     let words = [...wordCategories[chosenCategory]];
 
-    let players = Object.keys(mentions);
     let spyIndex = Math.floor(Math.random() * players.length);
     let spy = players[spyIndex];
-    let wordForSpy = words[Math.floor(Math.random() * words.length)];  
+    let wordForSpy = words[Math.floor(Math.random() * words.length)];
     let assignedWords = {};
 
     players.forEach((player, index) => {
-        if (index === spyIndex) {
-            assignedWords[player] = wordForSpy;  
-        } else {
-            assignedWords[player] = words[0];  
-        }
+        assignedWords[player] = index === spyIndex ? wordForSpy : words[0];
     });
 
-    for (let playerID in assignedWords) {
-        api.sendMessage(`🤫 आपका गुप्त शब्द: *${assignedWords[playerID]}*`, playerID);
+    api.sendMessage(`🎭 *Spy Game शुरू हो चुका है!*\n\n**श्रेणी:** ${chosenCategory}\n📢 हर खिलाड़ी को अपने शब्द को समझाना होगा, लेकिन शब्द नहीं बताना है!\n\n🔍 *Bot अब सभी प्लेयर्स को उनके शब्द भेज रहा है...*`, threadID);
+
+    // 🔥 Async function for DM
+    const sendWordToPlayer = async (playerID, word) => {
+        try {
+            await api.sendMessage(`🤫 आपका गुप्त शब्द: *${word}*`, playerID);
+        } catch (err) {
+            api.sendMessage(`⚠ *${mentions[playerID] || "Player"}* को DM नहीं भेज सका, उनका शब्द है: *${word}*`, threadID);
+        }
+    };
+
+    for (let playerID of players) {
+        await sendWordToPlayer(playerID, assignedWords[playerID]);
     }
 
-    api.sendMessage(
-        `🎭 *Spy Game शुरू हो चुका है!*\n\n**श्रेणी:** ${chosenCategory}\n📢 हर खिलाड़ी को अपने शब्द को अच्छे से समझाना होगा, लेकिन शब्द नहीं बताना है!\n\n🔍 *Bot अब रैंडम प्लेयर को चुनेगा और उनसे उनका शब्द समझाने को कहेगा!*`,
-        threadID
-    );
+    api.sendMessage(`✅ सभी प्लेयर्स को उनके शब्द मिल चुके हैं! बोट अब बारी-बारी से प्लेयर्स को बुलाएगा।`, threadID);
 
     let playerTurn = 0;
+    
+    // 🎯 Function to ask players to explain their word
     const playTurn = () => {
         if (playerTurn >= players.length) {
             return startVoting();
@@ -62,9 +73,24 @@ module.exports.run = async function ({ api, event, args }) {
         let player = players[playerTurn];
         playerTurn++;
 
-        api.sendMessage(`📢 *${mentions[player].replace("@", "")}*, अपने शब्द को **एक वाक्य में समझाओ**!`, threadID);
+        api.sendMessage(`📢 *${mentions[player] || "Player"}*, अपने शब्द को **एक वाक्य में समझाओ!**`, threadID, (err, info) => {
+            if (!err) {
+                let messageID = info.messageID;
+                // ⏳ 30 सेकंड का टाइम मिलेगा जवाब देने के लिए
+                setTimeout(() => {
+                    api.getMessageInfo(messageID, (err, msgInfo) => {
+                        if (err || !msgInfo.body) {
+                            api.sendMessage(`⚠ *${mentions[player] || "Player"}* ने कोई जवाब नहीं दिया!`, threadID);
+                        }
+                        // 🔄 अगले प्लेयर को बुलाओ
+                        playTurn();
+                    });
+                }, 30000);
+            }
+        });
     };
 
+    // 🗳 Voting Function
     const startVoting = () => {
         api.sendMessage(`🔍 **अब वोटिंग शुरू होगी!**\n\n👉 जिस प्लेयर को आप **Spy** समझते हैं, उसके मैसेज पर ❌ रिएक्शन दें।\n\n⏳ वोटिंग 30 सेकंड में ख़त्म होगी।`, threadID);
         
@@ -82,9 +108,9 @@ module.exports.run = async function ({ api, event, args }) {
                 }
 
                 if (accused === spy) {
-                    api.sendMessage(`✅ **बधाई हो!** आप सही थे! **${mentions[spy]}** असली Spy निकला!`, threadID);
+                    api.sendMessage(`✅ **बधाई हो!** आप सही थे! **${mentions[spy] || "Spy"}** असली Spy निकला!`, threadID);
                 } else {
-                    api.sendMessage(`❌ गलत वोटिंग! असली Spy **${mentions[spy]}** था!`, threadID);
+                    api.sendMessage(`❌ गलत वोटिंग! असली Spy **${mentions[spy] || "Spy"}** था!`, threadID);
                 }
             });
         }, 30000);
