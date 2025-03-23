@@ -1,13 +1,13 @@
 const axios = require("axios");
 
 module.exports.config = {
-    name: "wiki",
-    version: "2.0.0",
+    name: "imdb",
+    version: "1.1.0",
     hasPermssion: 0,
     credits: "MirryKal",
-    description: "Get Wikipedia search results with image and multilingual support",
-    commandCategory: "information",
-    usages: "[query] [language_code (optional)]",
+    description: "Find Movie/Series details from IMDb",
+    commandCategory: "entertainment",
+    usages: "[movie/series name]",
     cooldowns: 2
 };
 
@@ -15,43 +15,33 @@ module.exports.run = async function ({ api, event, args }) {
     const { threadID, messageID } = event;
     
     if (args.length === 0) {
-        return api.sendMessage("⚠ कृपया कोई टॉपिक दर्ज करें जिसे आप Wikipedia पर खोजना चाहते हैं!", threadID, messageID);
+        return api.sendMessage("⚠ कृपया कोई फ़िल्म या सीरीज़ का नाम दर्ज करें!", threadID, messageID);
     }
 
-    let lang = "en"; // Default English
-    let query = args.join(" ");
-
-    // अगर लास्ट में language code दिया गया है तो उसे अलग कर लो
-    if (args.length > 1) {
-        const lastArg = args[args.length - 1];
-        if (/^[a-z]{2}$/.test(lastArg)) {
-            lang = lastArg;
-            query = args.slice(0, -1).join(" ");
-        }
-    }
-
-    const API_URL = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+    const query = args.join(" ");
+    const API_KEY = "8f50e26e";  // ✅ तुम्हारी API Key सेट कर दी गई है
+    const API_URL = `http://www.omdbapi.com/?t=${encodeURIComponent(query)}&apikey=${API_KEY}`;
 
     try {
         const res = await axios.get(API_URL);
         const data = res.data;
 
-        if (!data.extract) {
-            throw new Error("No content found");
+        if (data.Response === "False") {
+            throw new Error("No movie found");
         }
 
-        let response = `📖 *${data.title}*\n\n${data.extract}\n\n🌐 और पढ़ें: ${data.content_urls.desktop.page}`;
+        let response = `🎬 *${data.Title}* (${data.Year})\n\n⭐ IMDb Rating: ${data.imdbRating}\n📺 Type: ${data.Type}\n🕰 Duration: ${data.Runtime}\n🎭 Genre: ${data.Genre}\n🎬 Director: ${data.Director}\n👥 Actors: ${data.Actors}\n📝 Plot: ${data.Plot}\n\n🌐 More Info: https://www.imdb.com/title/${data.imdbID}`;
 
-        if (data.thumbnail?.source) {
+        if (data.Poster && data.Poster !== "N/A") {
             return api.sendMessage({
                 body: response,
-                attachment: await global.utils.getStreamFromURL(data.thumbnail.source)
+                attachment: await global.utils.getStreamFromURL(data.Poster)
             }, threadID, messageID);
         } else {
             return api.sendMessage(response, threadID, messageID);
         }
 
     } catch (error) {
-        return api.sendMessage(`❌ Wikipedia पर *${query}* से संबंधित कोई जानकारी नहीं मिली।`, threadID, messageID);
+        return api.sendMessage(`❌ IMDb पर *${query}* से संबंधित कोई जानकारी नहीं मिली।`, threadID, messageID);
     }
 };
