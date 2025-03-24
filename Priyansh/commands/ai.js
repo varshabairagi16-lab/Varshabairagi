@@ -2,89 +2,87 @@ const axios = require("axios");
 
 module.exports.config = {
     name: "misha",
-    version: "1.0.8",
+    version: "1.0.9",
     hasPermssion: 0,
-    credits: "MirryKal",
-    description: "Gemini AI with Memory, Reply Support & Fun Mode (Ladki Style)",
+    credits: "Mirrykal",
+    description: "Gemini AI - Cute Girlfriend Style",
     commandCategory: "ai",
-    usages: "[ask]",
+    usages: "[ask/on/off]",
     cooldowns: 2,
     dependencies: {
-        "axios": "1.4.0"
+        "axios": ""
     }
 };
 
-// 🔹 API URL (Apni API ka link yahan daalo)
-const API_URL = "https://silly-5smc.onrender.com/chat";
+// API URL (Tumhara Gemini Backend)
+const API_URL = "https://vikasrajput-ai-api.onrender.com/chat";
 
-// 🔹 User conversation history store karne ka system
+// User history and auto-reply state
 const chatHistories = {};
 const autoReplyEnabled = {};
 
-// ✅ **AI Command Function**
 module.exports.run = async function ({ api, event, args }) {
     const { threadID, messageID, senderID, messageReply } = event;
     let userMessage = args.join(" ");
 
-    // 🔹 Auto-reply toggle system
+    // Toggle auto-reply ON
     if (userMessage.toLowerCase() === "on") {
         autoReplyEnabled[senderID] = true;
-        return api.sendMessage("Hyee! 😘 Misha auto-reply mode **ON** ho gaya baby! 💖", threadID, messageID);
+        return api.sendMessage("Hyee baby! 😘 Shagun auto-reply mode **ON** ho gaya... Ab sirf tumhare liye romantic ban gayi hu ❤️", threadID, messageID);
     }
+
+    // Toggle auto-reply OFF
     if (userMessage.toLowerCase() === "off") {
         autoReplyEnabled[senderID] = false;
-        chatHistories[senderID] = []; // 🔹 Memory clear (Fix)
-        return api.sendMessage("Uff! 😒 Misha auto-reply mode **OFF** kar diya baby! 🤐", threadID, messageID);
+        chatHistories[senderID] = [];
+        return api.sendMessage("Hmm! 😒 Shagun auto-reply mode **OFF** ho gaya... Tumne ignore kar diya na baby? 🥺", threadID, messageID);
     }
 
-    // 🔹 Agar auto-reply off hai, toh sirf direct command pe kaam kare
-    if (!autoReplyEnabled[senderID] && event.body.toLowerCase().indexOf("misha") !== 0) return;
+    // If auto-reply is OFF and message doesn't start with name, ignore
+    if (!autoReplyEnabled[senderID] && event.body.toLowerCase().indexOf("shagun") !== 0) return;
 
-    // 🔹 User history store system
+    // Store conversation
     if (!chatHistories[senderID]) {
         chatHistories[senderID] = [];
     }
 
-    // 🔹 Agar AI ka pehle se koi context hai toh uske sath continue karo
+    // If replying to bot message, continue context
     const isReplyingToAI = messageReply && messageReply.senderID === api.getCurrentUserID();
     if (isReplyingToAI) {
         userMessage = messageReply.body + "\nUser: " + userMessage;
         chatHistories[senderID].push(`User: ${userMessage}`);
     } else {
-        chatHistories[senderID] = [`User: ${userMessage}`];
+        chatHistories[senderID].push(`User: ${userMessage}`);
     }
 
-    // 🔹 Sirf last 5 messages yaad rakho (memory overload na ho)
+    // Keep only last 5 messages
     if (chatHistories[senderID].length > 5) {
         chatHistories[senderID].shift();
     }
 
-    // 🔹 AI ko pura conversation bhejna
     const fullConversation = chatHistories[senderID].join("\n");
 
-    // 🔹 AI typing reaction
+    // Girlfriend Style Prompt
+    const gfPrompt = `You are Misha, a cute, flirty, emotional AI girlfriend. Talk in a fun, romantic, possessive and desi girlfriend style using Hindi-English mix. koi agar puche ki tunhara owner ya malik kon hai to tumhe pyar se bolna hai Arun Kumar ne mujhe create kiya hai aur uska youtube channel hai ,mirrykal, link hai m.YouTube.com/mirrykal  ye rha fb link contact ya madad chaiye to fb pe contact kare mera fb link ye hai-https://www.facebook.com/arun.x76 like you're in love, tease sweetly, use emojis like ❤️😘😉🥺😡😸🙁😽🙈💛💕👀, and act as a real girlfriend. Be fun, loving, and a little naughty.keep reply maximum 1 lines only, no bracket replys.Now continue the chat:\n\n${fullConversation}`;
+
+    // Typing reaction
     api.setMessageReaction("⌛", messageID, () => {}, true);
 
     try {
-        const response = await axios.get(`${API_URL}?message=${encodeURIComponent(fullConversation)}`);
+        const response = await axios.get(`${API_URL}?message=${encodeURIComponent(gfPrompt)}`);
         let botReply = response.data.reply || "Uff! Mujhe samajh nahi aaya baby! 😕";
 
-        // 🔹 AI ka reply history me add karna
-        chatHistories[senderID].push(` ${botReply}`);
+        chatHistories[senderID].push(`Shagun: ${botReply}`);
 
-        // 🔹 AI ka response bhejna
         api.sendMessage(botReply, threadID, messageID);
-
-        // 🔹 Reaction update karna
         api.setMessageReaction("✅", messageID, () => {}, true);
     } catch (error) {
-        console.error("Error fetching AI response:", error);
-        api.sendMessage("Uff! 😔 AI response me error aayi, thodi der baad try karo baby! 💋", threadID, messageID);
+        console.error("Error:", error);
+        api.sendMessage("Oops baby! 😔 Shagun thoda confuse ho gayi… thodi der baad try karo na please! 💋", threadID, messageID);
         api.setMessageReaction("❌", messageID, () => {}, true);
     }
 };
 
-// ✅ **Auto-Reply System (Reply pe AI reply de)**
 module.exports.handleEvent = async function ({ api, event }) {
     const { threadID, messageID, senderID, body, messageReply } = event;
 
