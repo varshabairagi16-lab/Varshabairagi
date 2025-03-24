@@ -1,10 +1,10 @@
 const axios = require("axios");
 
 module.exports.config = {
-    name: "shagun",
+    name: "misha",
     version: "1.0.9",
     hasPermssion: 0,
-    credits: "Vikas rajput (Modified by ChatGPT)",
+    credits: "Mirrykal",
     description: "Gemini AI - Cute Girlfriend Style",
     commandCategory: "ai",
     usages: "[ask/on/off]",
@@ -72,7 +72,7 @@ module.exports.run = async function ({ api, event, args }) {
         const response = await axios.get(`${API_URL}?message=${encodeURIComponent(gfPrompt)}`);
         let botReply = response.data.reply || "Uff! Mujhe samajh nahi aaya baby! 😕";
 
-        chatHistories[senderID].push(`Shagun: ${botReply}`);
+        chatHistories[senderID].push(`${botReply}`);
 
         api.sendMessage(botReply, threadID, messageID);
         api.setMessageReaction("✅", messageID, () => {}, true);
