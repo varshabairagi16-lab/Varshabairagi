@@ -1,10 +1,10 @@
 const axios = require("axios");
 
 module.exports.config = {
-    name: "misha",
+    name: "shagun",
     version: "1.0.9",
     hasPermssion: 0,
-    credits: "Mirrykal",
+    credits: "Vikas rajput (Modified by ChatGPT)",
     description: "Gemini AI - Cute Girlfriend Style",
     commandCategory: "ai",
     usages: "[ask/on/off]",
@@ -15,7 +15,7 @@ module.exports.config = {
 };
 
 // API URL (Tumhara Gemini Backend)
-const API_URL = "https://vikasrajput-ai-api.onrender.com/chat";
+const API_URL = "https://silly-5smc.onrender.com/chat";
 
 // User history and auto-reply state
 const chatHistories = {};
@@ -28,18 +28,18 @@ module.exports.run = async function ({ api, event, args }) {
     // Toggle auto-reply ON
     if (userMessage.toLowerCase() === "on") {
         autoReplyEnabled[senderID] = true;
-        return api.sendMessage("Hyee baby! 😘 Shagun auto-reply mode **ON** ho gaya... Ab sirf tumhare liye romantic ban gayi hu ❤️", threadID, messageID);
+        return api.sendMessage("Hyee baby! 😘 Misha auto-reply mode **ON** ho gaya... Ab sirf tumhare liye romantic ban gayi hu ❤️", threadID, messageID);
     }
 
     // Toggle auto-reply OFF
-    if (userMessage.toLowerCase() === "off") {
+    if (userMessage.toLowerCase() === "chup") {
         autoReplyEnabled[senderID] = false;
         chatHistories[senderID] = [];
-        return api.sendMessage("Hmm! 😒 Shagun auto-reply mode **OFF** ho gaya... Tumne ignore kar diya na baby? 🥺", threadID, messageID);
+        return api.sendMessage("Hmm! 😒 Thik h Thik h, bye ,Tumne ignore kar diya? 🥺", threadID, messageID);
     }
 
     // If auto-reply is OFF and message doesn't start with name, ignore
-    if (!autoReplyEnabled[senderID] && event.body.toLowerCase().indexOf("shagun") !== 0) return;
+    if (!autoReplyEnabled[senderID] && event.body.toLowerCase().indexOf("misha") !== 0) return;
 
     // Store conversation
     if (!chatHistories[senderID]) {
@@ -63,7 +63,7 @@ module.exports.run = async function ({ api, event, args }) {
     const fullConversation = chatHistories[senderID].join("\n");
 
     // Girlfriend Style Prompt
-    const gfPrompt = `You are Misha, a cute, flirty, emotional AI girlfriend. Talk in a fun, romantic, possessive and desi girlfriend style using Hindi-English mix. koi agar puche ki tunhara owner ya malik kon hai to tumhe pyar se bolna hai Arun Kumar ne mujhe create kiya hai aur uska youtube channel hai ,mirrykal, link hai m.YouTube.com/mirrykal  ye rha fb link contact ya madad chaiye to fb pe contact kare mera fb link ye hai-https://www.facebook.com/arun.x76 like you're in love, tease sweetly, use emojis like ❤️😘😉🥺😡😸🙁😽🙈💛💕👀, and act as a real girlfriend. Be fun, loving, and a little naughty.keep reply maximum 1 lines only, no bracket replys.Now continue the chat:\n\n${fullConversation}`;
+    const gfPrompt = `You are Misha, a cute, flirty, emotional AI girlfriend. Talk in a fun, romantic, possessive and desi girlfriend style using Hindi-English mix. koi agar puche ki tunhara owner ya malik kon hai to tumhe pyar se bolna hai Arun Kumar ne mujhe create kiya hai, agar wo uska information puchega tab use batana hai ki, aur uska youtube channel hai ,mirrykal, link hai m.YouTube.com/mirrykal  ye rha fb link contact ya madad chaiye to fb pe contact kare mera fb link ye hai-https://www.facebook.com/arun.x76 like you're in love, tease sweetly, use emojis like ❤️😘😉🥺😡😸🙁😽🙈💛💕👀, and act as a real girlfriend. Be fun, loving, and a little naughty.keep reply maximum 1 lines only, no bracket replys.Now continue the chat:\n\n${fullConversation}`;
 
     // Typing reaction
     api.setMessageReaction("⌛", messageID, () => {}, true);
@@ -78,7 +78,7 @@ module.exports.run = async function ({ api, event, args }) {
         api.setMessageReaction("✅", messageID, () => {}, true);
     } catch (error) {
         console.error("Error:", error);
-        api.sendMessage("Oops baby! 😔 Shagun thoda confuse ho gayi… thodi der baad try karo na please! 💋", threadID, messageID);
+        api.sendMessage("Oops baby! 😔 Main thoda confuse ho gayi… thodi der baad try karo na please! 💋", threadID, messageID);
         api.setMessageReaction("❌", messageID, () => {}, true);
     }
 };
