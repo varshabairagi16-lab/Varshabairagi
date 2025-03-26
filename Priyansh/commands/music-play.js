@@ -21,10 +21,10 @@ function deleteAfterTimeout(filePath, timeout = 5000) {
 module.exports = {
   config: {
     name: "play",
-    version: "3.1.0",
+    version: "3.3.0",
     hasPermssion: 0,
     credits: "Mirrykal",
-    description: "Choose YouTube song by number",
+    description: "Choose YouTube song by number (with thumbnails)",
     commandCategory: "Media",
     usages: "[songName]",
     cooldowns: 5,
@@ -36,14 +36,7 @@ module.exports = {
     }
 
     const songName = args.join(" ");
-
-    const processingMessage = await api.sendMessage(
-      `🔍 "${songName}" dhoondh rahi hoon... Ruko zara! 😏`,
-      event.threadID,
-      null,
-      event.messageID
-    );
-
+    
     try {
       const searchResults = await ytSearch(songName);
       if (!searchResults || searchResults.videos.length < 1) {
@@ -51,15 +44,39 @@ module.exports = {
       }
 
       const topResults = searchResults.videos.slice(0, 7);
+      const downloadDir = path.join(__dirname, "cache");
+      if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true });
+
+      let mediaData = [];
       let searchReply = `📌 **Choose a song number (1-7):**\n\n`;
 
-      topResults.forEach((video, index) => {
-        searchReply += `${index + 1}. ${video.title} (${video.timestamp})\n`;
-      });
+      for (let i = 0; i < topResults.length; i++) {
+        const video = topResults[i];
+        searchReply += `🎵 ${i + 1}. ${video.title} (${video.timestamp})\n\n`;
 
-      searchReply += `\n🔢 **Reply with a number (1-7) to select a song!**`;
+        const thumbnailUrl = video.thumbnail;
+        const thumbPath = path.join(downloadDir, `thumb_${i + 1}.jpg`);
 
-      api.sendMessage(searchReply, event.threadID, (error, info) => {
+        try {
+          const writer = fs.createWriteStream(thumbPath);
+          const response = await axios({ url: thumbnailUrl, responseType: "stream" });
+          response.data.pipe(writer);
+
+          await new Promise((resolve, reject) => {
+            writer.on("finish", resolve);
+            writer.on("error", reject);
+          });
+
+          mediaData.push(fs.createReadStream(thumbPath));
+          deleteAfterTimeout(thumbPath, 5000);
+        } catch (error) {
+          console.error(`❌ Thumbnail Download Error: ${error.message}`);
+        }
+      }
+
+      searchReply += `🔢 **Reply with a number (1-7) to select a song!**`;
+
+      api.sendMessage({ body: searchReply, attachment: mediaData }, event.threadID, (error, info) => {
         global.client.handleReply.push({
           type: "music-selection",
           name: "music",
@@ -87,11 +104,9 @@ module.exports = {
     const videoUrl = `https://www.youtube.com/watch?v=${selectedVideo.videoId}`;
     const apiUrl = `https://mirrykal.onrender.com/download?url=${encodeURIComponent(videoUrl)}&type=audio`;
 
-    // **Delete the song selection message**
     api.unsendMessage(handleReply.messageID);
 
-    // **Send Title + Processing Message**
-    api.sendMessage(
+    const processingMessage = await api.sendMessage(
       `🎵 **Title:** ${selectedVideo.title}\n⏳ **Processing...**`,
       event.threadID
     );
