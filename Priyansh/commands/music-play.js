@@ -92,9 +92,7 @@ module.exports = {
     if (!/^[1-7]$/.test(message)) return;
 
     const threadID = event.threadID;
-    if (!searchResultsCache[threadID]) {
-      return api.sendMessage("⚠️ Pehle **music [song name]** likho phir number choose karo! 😏", threadID);
-    }
+//empty
 
     const choice = parseInt(message);
     const selectedVideo = searchResultsCache[threadID][choice - 1];
