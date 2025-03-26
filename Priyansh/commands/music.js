@@ -82,7 +82,7 @@ module.exports = {
       await api.sendMessage(
         {
           attachment: fs.createReadStream(thumbnailPath),
-          body: `🎶 **Title:** ${topResult.title}\n👀 Dekho ye raha thumbnail!`,
+          body: `🎶 **Title:** ${topResult.title}\n👀 ..Thoda sa Wait kro Song load Horha hai 😘`,
         },
         event.threadID
       );
