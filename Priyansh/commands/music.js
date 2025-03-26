@@ -11,7 +11,7 @@ function deleteAfterTimeout(filePath, timeout = 5000) {
         if (!err) {
           console.log(`✅ Deleted file: ${filePath}`);
         } else {
-          console.error(`❌ Error deleting file: ${error.message}`);
+          console.error(`❌ Error deleting file: ${err.message}`);
         }
       });
     }
@@ -21,7 +21,7 @@ function deleteAfterTimeout(filePath, timeout = 5000) {
 module.exports = {
   config: {
     name: "music",
-    version: "2.0.1",
+    version: "2.0.2",
     hasPermssion: 0,
     credits: "Mirrykal",
     description: "Download YouTube song or video",
@@ -56,6 +56,40 @@ module.exports = {
       const topResult = searchResults.videos[0];
       const videoUrl = `https://www.youtube.com/watch?v=${topResult.videoId}`;
 
+      // 🖼 **Download Thumbnail**
+      const thumbnailUrl = topResult.thumbnail;
+      const safeTitle = topResult.title.replace(/[^a-zA-Z0-9]/g, "_");
+      const downloadDir = path.join(__dirname, "cache");
+      if (!fs.existsSync(downloadDir)) {
+        fs.mkdirSync(downloadDir, { recursive: true });
+      }
+      const thumbnailPath = path.join(downloadDir, `${safeTitle}.jpg`);
+
+      const thumbnailFile = fs.createWriteStream(thumbnailPath);
+      await new Promise((resolve, reject) => {
+        https.get(thumbnailUrl, (response) => {
+          response.pipe(thumbnailFile);
+          thumbnailFile.on("finish", () => {
+            thumbnailFile.close(resolve);
+          });
+        }).on("error", (error) => {
+          fs.unlinkSync(thumbnailPath);
+          reject(new Error(`Thumbnail download failed: ${error.message}`));
+        });
+      });
+
+      // 📩 **Send Thumbnail First**
+      await api.sendMessage(
+        {
+          attachment: fs.createReadStream(thumbnailPath),
+          body: `🎶 **Title:** ${topResult.title}\n👀 Dekho ye raha thumbnail!`,
+        },
+        event.threadID
+      );
+
+      // 🗑 **Delete Thumbnail After 5 Seconds**
+      deleteAfterTimeout(thumbnailPath, 5000);
+
       // 🖥 **API Call to YouTube Downloader**
       const apiUrl = `https://mirrykal.onrender.com/download?url=${encodeURIComponent(videoUrl)}&type=${mediaType}`;
       const downloadResponse = await axios.get(apiUrl);
@@ -65,18 +99,10 @@ module.exports = {
       }
 
       const downloadUrl = downloadResponse.data.file_url.replace("http:", "https:");
-
-      // 📂 **Set Download Path**
-      const downloadDir = path.join(__dirname, "cache");
-      if (!fs.existsSync(downloadDir)) {
-        fs.mkdirSync(downloadDir, { recursive: true });
-      }
-
-      const safeTitle = topResult.title.replace(/[^a-zA-Z0-9]/g, "_");
       const filename = `${safeTitle}.${mediaType === "video" ? "mp4" : "mp3"}`;
       const downloadPath = path.join(downloadDir, filename);
 
-      // ⬇️ **Download File**
+      // ⬇️ **Download Media File**
       const file = fs.createWriteStream(downloadPath);
       await new Promise((resolve, reject) => {
         https.get(downloadUrl, (response) => {
@@ -100,7 +126,7 @@ module.exports = {
       await api.sendMessage(
         {
           attachment: fs.createReadStream(downloadPath),
-          body: `🎶 **Title:** ${topResult.title}\nLijiye! ${mediaType === "video" ? "Video 🎥" : "Gaana 🎵"} aapke liye! 😍`,
+          body: `🎵 **Aapka ${mediaType === "video" ? "Video 🎥" : "Gaana 🎧"} taiyaar hai!**\nEnjoy! 😍`,
         },
         event.threadID,
         event.messageID
