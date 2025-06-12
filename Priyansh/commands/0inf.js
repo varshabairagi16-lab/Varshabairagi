@@ -29,7 +29,6 @@ module.exports.run = async function ({ api, event }) {
   const imgLinks = [
     "https://i.imgur.com/JK7ywKt.jpeg",
     "https://i.imgur.com/5yHDG3r.jpeg",
-    "https://i.imgur.com/HyQvK9J.jpeg"
   ];
 
   const chosenImage = imgLinks[Math.floor(Math.random() * imgLinks.length)];
