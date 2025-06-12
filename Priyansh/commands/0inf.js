@@ -1,50 +1,60 @@
 module.exports.config = {
-	name: "inf",
-	version: "1.0.1", 
-	hasPermssion: 0,
-	credits: "Arun Kumar", //don't change the credits please
-	description: "Admin and Bot info.",
-	commandCategory: "info",
-	cooldowns: 1,
-	dependencies: 
-	{
-    "request":"",
-    "fs-extra":"",
-    "axios":""
+  name: "info",
+  version: "4.0.0",
+  hasPermssion: 0,
+  credits: "Rudra",
+  description: "Display swaggy owner and bot info with random stylish image",
+  commandCategory: "info",
+  cooldowns: 1,
+  dependencies: {
+    "request": "",
+    "fs-extra": "",
+    "axios": ""
   }
 };
-module.exports.run = async function({ api,event,args,client,Users,Threads,__GLOBAL,Currencies }) {
-const axios = global.nodemodule["axios"];
-const request = global.nodemodule["request"];
-const fs = global.nodemodule["fs-extra"];
-const time = process.uptime(),
-		hours = Math.floor(time / (60 * 60)),
-		minutes = Math.floor((time % (60 * 60)) / 60),
-		seconds = Math.floor(time % 60);
-const moment = require("moment-timezone");
-var juswa = moment.tz("Asia/Kolkata").format("『D/MM/YYYY』 【HH:mm:ss】");
-var link = , , "https://i.imgur.com/JK7ywKt.jpeg", "https://i.imgur.com/k4cavtQ.jpeg"];
-var callback = () => api.sendMessage({body:`🌹𝙰𝙳𝙼𝙸𝙽 𝙰𝙽𝙳 𝙱𝙾𝚃 𝙍𝙖𝙟 𝙸𝙽𝙵𝙾𝚁𝙼𝙰𝚃𝙸𝙾𝙽 🇮🇳 
 
+module.exports.run = async function ({ api, event }) {
+  const axios = global.nodemodule["axios"];
+  const request = global.nodemodule["request"];
+  const fs = global.nodemodule["fs-extra"];
+  const moment = require("moment-timezone");
 
-☄️𝗕𝗢𝗧 𝗡𝗔𝗠𝗘☄️ ⚔ ${global.config.BOTNAME} ⚔
+  const time = process.uptime();
+  const hours = Math.floor(time / 3600);
+  const minutes = Math.floor((time % 3600) / 60);
+  const seconds = Math.floor(time % 60);
+  const dateNow = moment.tz("Asia/Kolkata").format("『DD/MM/YYYY』 【HH:mm:ss】");
 
-🔥𝗢𝗪𝗡𝗘𝗥 🔥☞︎︎︎ 𝙍𝘼𝙅 𝙓𝙒𝘿 ☜︎︎︎✰ \n\n
-🙈🄾🅆🄽🄴🅁 🄲🄾🄽🅃🄰🄲🅃 🄻🄸🄽🄺🅂🙈➪ \n\n  𝗙𝗔𝗖𝗘𝗕𝗢𝗢𝗞 🧨https://www.facebook.com/profile.php?id=100032269830615💞🕊️
-  \n 
-✅𝗜𝗡𝗦𝗧𝗔𝗚𝗥𝗔𝗠 𝗨𝗦𝗘𝗥𝗡𝗔𝗠𝗘👉 @Rajthakur _031 \n\n  ====𝗧𝗼 𝗹𝗲𝗮𝗿𝗻 𝗛𝗼𝘄 𝘁𝗼 𝗖𝗿𝗲𝗮𝘁𝗲 𝗔 𝗯𝗼𝘁 === 𝗩𝗶𝘀𝗶𝘁 𝗔𝗻𝗱 𝗦𝘂𝗯𝘀𝗰𝗿𝗶𝗯𝗲 𝗧𝗼 𝗠𝘆 𝗖𝗵𝗮𝗻𝗻𝗲𝗹✅ 🗡 https://www.youtube.com/@mirrykal
-✧══════•❁❀❁•══════✧
+  // Your personal Imgur + anime links
+  const imgLinks = [
+    "https://i.imgur.com/JK7ywKt.jpeg",
+    "https://i.imgur.com/5yHDG3r.jpeg",
+    "https://i.imgur.com/HyQvK9J.jpeg"
+  ];
 
-🌸𝗕𝗼𝘁 𝗣𝗿𝗲𝗳𝗶𝘅🌸☞︎︎︎☜︎︎︎✰ ${global.config.PREFIX}
+  const chosenImage = imgLinks[Math.floor(Math.random() * imgLinks.length)];
 
-🥳UPTIME🥳
+  const msg = `✨ 𝙎𝙒𝘼𝙂 𝙈𝙊𝘿𝙀 𝙊𝙉 ✨\n━━━━━━━━━━━━━━━\n\n` +
+              `👑 𝗕𝗢𝗧: ${global.config.BOTNAME || "🔥 RAJ XWD THAKUR 👿"}\n` +
+              `🧠 𝗢𝗪𝗡𝗘𝗥:𝙍𝘼𝙅 𝙏𝙃𝘼𝙆𝙐𝙍 𝙓𝙒𝘿  🔥 (UID:100032269830615 )\n` +
+              `📸 𝗜𝗡𝗦𝗧𝗔: @rajthakur8` +
+              `📍 𝗣𝗥𝗘𝗙𝗜𝗫: ${global.config.PREFIX || "+"}\n` +
+              `📆 𝗗𝗔𝗧𝗘: ${dateNow}\n` +
+              `⏳ 𝗨𝗣𝗧𝗜𝗠𝗘: ${hours}h ${minutes}m ${seconds}s\n\n` +
+              `💌 𝗧𝗬𝗣𝗘 '${global.config.PREFIX || "+"}help' 𝗙𝗢𝗥 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 💌\n` +
+              `━━━━━━━━━━━━━━━\n💖 𝑴𝒂𝒅𝒆 𝒘𝒊𝒕𝒉 𝑺𝒘𝒂𝒈 𝒃𝒚 RAJ THAKUR XWD`;
 
-🌪️Today is🌪️ ☞︎︎︎☜︎︎︎✰ ${juswa} 
+  const callback = () =>
+    api.sendMessage(
+      {
+        body: msg,
+        attachment: fs.createReadStream(__dirname + "/cache/rudra_info.jpg")
+      },
+      event.threadID,
+      () => fs.unlinkSync(__dirname + "/cache/rudra_info.jpg")
+    );
 
-⚡Bot is running⚡ ${hours}:${minutes}:${seconds}.
-
-✅Thanks for using My Bot ❤ ${global.config.BOTNAME} 🖤
-
-`,attachment: fs.createReadStream(__dirname + "/cache/juswa.jpg")}, event.threadID, () => fs.unlinkSync(__dirname + "/cache/juswa.jpg")); 
-      return request(encodeURI(link[Math.floor(Math.random() * link.length)])).pipe(fs.createWriteStream(__dirname + "/cache/juswa.jpg")).on("close",() => callback());
-   };
+  request(encodeURI(chosenImage))
+    .pipe(fs.createWriteStream(__dirname + "/cache/rudra_info.jpg"))
+    .on("close", () => callback());
+};
