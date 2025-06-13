@@ -1,51 +1,70 @@
 const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
+const crypto = require("crypto");
 
 module.exports.config = {
   name: "coupledp",
-  version: "1.0.0",
+  version: "2.0.0",
   hasPermssion: 0,
-  credits: "Raj xd",
-  description: "Fetch couple dp images from Google search",
+  credits: "Rudra",
+  description: "Fetch couple dp images from Pinterest API server",
   commandCategory: "fun",
-  usages: "+coupledp your+query - number",
+  usages: "+coupledp your query - number",
   cooldowns: 3
 };
 
+// 🔒 CREDIT LOCK: Don't remove these lines!
+(() => {
+  const code = fs.readFileSync(__filename, "utf8");
+  if (!code.includes('credits: "Rudra"') || !code.includes("Powered by Rudra")) {
+    console.error("❌ Credit ya powered by Rudra chhed diya gaya hai. Code bandh.");
+    process.exit(1); // End script immediately
+  }
+})();
+
 module.exports.run = async ({ api, event, args }) => {
-  const q = args.join(" ");
-  if (!q.includes("-")) return api.sendMessage("📌 Usage: +coupledp your query - number", event.threadID);
-
-  const query = q.substring(0, q.indexOf("-")).trim();
-  const count = parseInt(q.split("-").pop().trim()) || 1;
-
-  const url = `https://rudra-pintrest-server.onrender.com/dp?q=${encodeURIComponent(query)}&n=${count}`;
   try {
-    const res = await axios.get(url);
-    const images = res.data.data;
+    const q = args.join(" ");
+    if (!q.includes("-")) {
+      return api.sendMessage("⚠️ Usage: +coupledp your query - number\nExample: +coupledp mohit riya - 2", event.threadID);
+    }
 
-    let imgData = [];
+    const query = q.substring(0, q.indexOf("-")).trim();
+    const count = parseInt(q.split("-").pop().trim()) || 1;
+
+    const cachePath = path.join(__dirname, "cache");
+    if (!fs.existsSync(cachePath)) fs.mkdirSync(cachePath);
+
+    const url = `https://rudra-pintrest-server.onrender.com/dp?q=${encodeURIComponent(query)}&n=${count}`;
+    const res = await axios.get(url);
+
+    if (!res.data || res.data.status !== "success" || !res.data.data.length) {
+      return api.sendMessage("❌ Couldn't fetch DPs. Try another keyword.", event.threadID);
+    }
+
+    const images = res.data.data;
+    const attachments = [];
+
     for (let i = 0; i < images.length; i++) {
-      const imgPath = path.join(__dirname, "cache", `dp${i}.jpg`);
+      const imgPath = path.join(cachePath, `dp${i}.jpg`);
       const imgBuffer = (await axios.get(images[i], { responseType: "arraybuffer" })).data;
       fs.writeFileSync(imgPath, imgBuffer);
-      imgData.push(fs.createReadStream(imgPath));
+      attachments.push(fs.createReadStream(imgPath));
     }
 
     api.sendMessage({
-      body: `📷 Here's your *${count}* Couple DP:\n🔍 ${query}`,
-      attachment: imgData
-    }, event.threadID, event.messageID);
-
-    // Clean cache
-    for (let i = 0; i < images.length; i++) {
-      const imgPath = path.join(__dirname, "cache", `dp${i}.jpg`);
-      fs.unlinkSync(imgPath);
-    }
+      body: `📸 Here's your *${count}* Couple DP (${query})\n🖤 Powered by Rudra x raj xd `,
+      attachment: attachments
+    }, event.threadID, () => {
+      for (let i = 0; i < images.length; i++) {
+        const imgPath = path.join(cachePath, `dp${i}.jpg`);
+        fs.unlinkSync(imgPath);
+      }
+    }, event.messageID);
 
   } catch (err) {
-    console.log(err.message);
-    api.sendMessage("❌ Failed to fetch couple DP. Try again.", event.threadID, event.messageID);
+    console.error("[CoupleDP ERROR]", err.message);
+    api.sendMessage("🚫 Something went wrong while fetching Couple DPs. Try again later.", event.threadID, event.messageID);
   }
 };
