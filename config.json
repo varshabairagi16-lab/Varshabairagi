@@ -1,11 +1,11 @@
 {
     "language": "en",
     "keyActive": "",
-    "DeveloperMode": true,
+    "DeveloperMode": false,
     "autoCreateDB": true,
     "notiGroup": true,
     "NOTIFICATION": true,
-    "allowInbox": true,
+    "allowInbox": false,
     "autoClean": true,
     "commandDisabled": [
         "sim.js"
@@ -16,13 +16,13 @@
     "EMAIL": "",
     "PASSWORD": "",
     "OTPKEY": "",
-    "BOTNAME": "🆁︎🅰︎🅹︎ 🆇︎🅳︎- 2.🅾︎",
-    "PREFIX": "#",
+    "BOTNAME": "RAJ XWD THAKUR ",
+    "PREFIX": "+",
     "ADMINBOT": [
-        "100032269830615"
+        "100065735116294"
     ],
     "NDH": [
-        "100032269830615"
+        "100065735116294"
     ],
     "DATABASE": {
         "sqlite": {
@@ -176,7 +176,7 @@
         "YOUTUBE_API": "AIzaSyAE4wH3OSfPUjJZTJvByQfXhEuaBMXjzAA"
     },
     "music": {
-        "YOUTUBE_API": "AIzaSyAAHxsLdhzScjCuvdnmrrsfAGXcDwzF3Bk"
+        "YOUTUBE_API": "AIzaSyAwzbcb-6QAzgZtl4qf3Z2GhQ3mqrbbMR8"
     },
     "mine": {
         "APIKEY": ""
