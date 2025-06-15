@@ -10,13 +10,13 @@
     "commandDisabled": [
         "sim.js"
     ],
-    "event disabled": [
+    "eventDisabled": [
         "join.js"
     ],
     "EMAIL": "",
     "PASSWORD": "",
     "OTPKEY": "",
-    "BOTNAME": "RAJ XWD THAKUR ",
+    "BOTNAME": "RAJ XWD-",
     "PREFIX": "+",
     "ADMINBOT": [
         "100032269830615"
