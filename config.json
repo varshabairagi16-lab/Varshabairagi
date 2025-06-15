@@ -10,7 +10,7 @@
     "commandDisabled": [
         "sim.js"
     ],
-    "eventDisabled": [
+    "event disabled": [
         "join.js"
     ],
     "EMAIL": "",
