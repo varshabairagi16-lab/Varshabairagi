@@ -1,30 +1,26 @@
+const fs = require("fs");
 module.exports.config = {
- name: "rushia",
- version: "1.0.0",
- hasPermssion: 0,
- credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
- description: "Random Rushia",
- commandCategory: "random-img",
- usages: "rushia",
- cooldowns: 3
+	name: "chocolate",
+    version: "1.0.1",
+	hasPermssion: 0,
+	credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭", 
+	description: "hihihihi",
+	commandCategory: "no prefix",
+	usages: "chocolate",
+    cooldowns: 5, 
 };
 
-module.exports.run = async ({ api, event }) => {
- const axios = require('axios');
- const request = require('request');
- const fs = require("fs");
- axios.get('https://saikiapi-v3-production.up.railway.app/holo/rushia').then(res => {
- let ext = res.data.url.substring(res.data.url.lastIndexOf(".") + 1);
- let callback = function () {
-     api.sendMessage({
-      attachment: fs.createReadStream(__dirname + `/cache/rushia.${ext}`)
-     }, event.threadID, () => fs.unlinkSync(__dirname + `/cache/rushia.${ext}`), event.messageID);
-   api.setMessageReaction("✅", event.messageID, (err) => {}, true);
-    };
-    request(res.data.url).pipe(fs.createWriteStream(__dirname + `/cache/rushia.${ext}`)).on("close", callback);
-   })
-      .catch(err => {
-                     api.sendMessage("there's something problem while generating photo, please try again!", event.threadID, event.messageID);
-    api.setMessageReaction("☹️", event.messageID, (err) => {}, true);
-                  })    
-}
+module.exports.handleEvent = function({ api, event, client, __GLOBAL }) {
+	var { threadID, messageID } = event;
+	if (event.body.indexOf("Chocolate")==0 || event.body.indexOf("chocolate")==0 || event.body.indexOf("toffee")==0 || event.body.indexOf("Toffee")==0) {
+		var msg = {
+				body: "Ye lo chocolate 🍫",
+				attachment: fs.createReadStream(__dirname + `/cache/chocolate.jpg`)
+			}
+			api.sendMessage(msg, threadID, messageID);
+    api.setMessageReaction("🍫", event.messageID, (err) => {}, true)
+		}
+	}
+	module.exports.run = function({ api, event, client, __GLOBAL }) {
+
+ }
