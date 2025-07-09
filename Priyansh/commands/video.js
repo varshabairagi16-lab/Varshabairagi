@@ -1,85 +1,93 @@
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 const yts = require("yt-search");
 
-module.exports.config = {
-  name: "video2",
-  hasPermission: 0,
-  version: "1.0.0",
-  description: "Download YouTube videos (under 25MB) or provide link",
-  credits: "Raj",
-  cooldowns: 10,
-  commandCategory: "Utility"
+// 🔗 Get Base API URL
+const baseApiUrl = async () => {
+    const base = await axios.get(`https://raw.githubusercontent.com/Mostakim0978/D1PT0/refs/heads/main/baseApiUrl.json`);
+    return base.data.api;
 };
 
-module.exports.run = async function ({ api, event, args }) {
-  if (!args[0]) {
-    return api.sendMessage(`❌ | jis song ki video dekhni ho uska name likho..!`, event.threadID);
-  }
+(async () => {
+    global.apis = {
+        diptoApi: await baseApiUrl()
+    };
+})();
 
-  try {
-    const query = args.join(" ");
-    const findingMessage = await api.sendMessage(`🔍 | "${query}" Song dhondh Kar send karti hun...`, event.threadID);
-
-    const searchResults = await yts(query);
-    const firstResult = searchResults.videos[0];
-
-    if (!firstResult) {
-      await api.sendMessage(`❌ | "${query}" No results found for .`, event.threadID);
-      return;
+// 🔧 Utils: Get Stream from URL
+async function getStreamFromURL(url, pathName) {
+    try {
+        const response = await axios.get(url, { responseType: "stream" });
+        response.data.path = pathName;
+        return response.data;
+    } catch (err) {
+        throw new Error("Failed to get stream from URL.");
     }
+}
 
-    const { title, url } = firstResult;
-    await api.editMessage(`⏳ | "${title}" Download ka link mil raha hai...`, findingMessage.messageID);
+global.utils = {
+    ...global.utils,
+    getStreamFromURL: global.utils.getStreamFromURL || getStreamFromURL
+};
 
-    const apiUrl = `https://mr-prince-malhotra-ytdl.vercel.app/video?url=${encodeURIComponent(url)}`;
-    const response = await axios.get(apiUrl);
-    const responseData = response.data;
+// 🔍 Extract YouTube Video ID
+function getVideoID(url) {
+    const regex = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})(?:\S+)?$/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
 
-    if (!responseData.result || !responseData.result.url) {
-      await api.sendMessage(`❌ | "${title}" download ke liye koi link nhi mile`, event.threadID);
-      return;
+// 📦 Command Configuration
+module.exports.config = {
+    name: "video",
+    version: "1.1.0",
+    hasPermssion: 0,
+    credits: "Mesbah Saxx (Edited by Rudra)",
+    description: "Download YouTube video by URL or name",
+    commandCategory: "media",
+    usages: "[url | song name]",
+    cooldowns: 5,
+    usePrefix: true
+};
+
+// 🚀 Command Execution
+module.exports.run = async function ({ api, args, event }) {
+    try {
+        let videoID, w;
+        const url = args[0];
+
+        // Check if input is a YouTube link
+        if (url && (url.includes("youtube.com") || url.includes("youtu.be"))) {
+            videoID = getVideoID(url);
+            if (!videoID) {
+                return api.sendMessage("❌ Invalid YouTube URL provided!", event.threadID, event.messageID);
+            }
+        } else {
+            const query = args.join(' ');
+            if (!query) return api.sendMessage("❌ Please provide a song name or YouTube link!", event.threadID, event.messageID);
+
+            w = await api.sendMessage(`🔍 Searching for: "${query}"`, event.threadID);
+            const r = await yts(query);
+            const videos = r.videos.slice(0, 30);
+            const selected = videos[Math.floor(Math.random() * videos.length)];
+            videoID = selected.videoId;
+        }
+
+        // 🔗 Download link fetch
+        const { data: { title, quality, downloadLink } } = await axios.get(`${global.apis.diptoApi}/ytDl3?link=${videoID}&format=mp4`);
+
+        if (w?.messageID) api.unsendMessage(w.messageID);
+
+        // 🔗 Shorten link using TinyURL
+        const shortenedLink = (await axios.get(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(downloadLink)}`)).data;
+
+        // 📩 Send message with stream
+        return api.sendMessage({
+            body: `🎬 Title: ${title}\n📺 Quality: ${quality}\n📥 Download: ${shortenedLink}`,
+            attachment: await global.utils.getStreamFromURL(downloadLink, `${title}.mp4`)
+        }, event.threadID, event.messageID);
+
+    } catch (err) {
+        console.error(err);
+        return api.sendMessage("⚠️ Error: " + (err.message || "Something went wrong."), event.threadID, event.messageID);
     }
-
-    const downloadUrl = responseData.result.url;
-    const filePath = path.resolve(__dirname, "cache", `${Date.now()}-${title}.mp4`);
-
-    const videoResponse = await axios.get(downloadUrl, {
-      responseType: "stream",
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
-
-    const fileStream = fs.createWriteStream(filePath);
-    videoResponse.data.pipe(fileStream);
-
-    fileStream.on("finish", async () => {
-      const stats = fs.statSync(filePath);
-      const fileSizeInMB = stats.size / (1024 * 1024);
-
-      if (fileSizeInMB > 25) {
-        await api.sendMessage(`❌ | "${title}" Ka size ${fileSizeInMB.toFixed(2)}MB Hai, Jo 25 MB C Zada Hai ।📥 download link: ${downloadUrl}`, event.threadID);
-        fs.unlinkSync(filePath);
-        return;
-      }
-
-      await api.sendMessage({
-        body: `🎥 | Apki video ko"${title}" download karliya gaya hai!💞`,
-        attachment: fs.createReadStream(filePath)
-      }, event.threadID);
-
-      fs.unlinkSync(filePath);
-      api.unsendMessage(findingMessage.messageID);
-    });
-
-    videoResponse.data.on("error", async (error) => {
-      console.error(error);
-      await api.sendMessage(`❌ | video download karne me ak masla aya tha: ${error.message}`, event.threadID);
-      fs.unlinkSync(filePath);
-    });
-
-  } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
-    await api.sendMessage(`❌ | Mujhe video download karne me kuch issues arahe hai: ${error.response ? error.response.data : error.message}`, event.threadID);
-  }
 };
