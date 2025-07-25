@@ -24,13 +24,13 @@ module.exports.run = async function({ api, event, Users, Threads }) {
     
     // Random Instagram Video Links
     const videoLinks = [
-        "https://i.imgur.com/p8wkPBI.mp4",
-        "https://i.imgur.com/zIoaoc0.mp4",
-        "https://i.imgur.com/tYHkSuj.mp4",
-        "https://i.imgur.com/71Ftuzt.mp4",
-        "https://i.imgur.com/y7GOEob.mp4",
-        "https://i.imgur.com/Q4Yebey.mp4",
-        "https://i.imgur.com/cLBLMpe.mp4"
+        "https://i.imgur.com/OHTcAGv.mp4",
+        "https://i.imgur.com/QCsxN6h.mp4",
+        "https://i.imgur.com/CM6uGry.mp4",
+        "https://i.imgur.com/RDji9aR.mp4",
+        "https://i.imgur.com/7CaCDQX.mp4",
+        "https://i.imgur.com/iusgHyQ.mp4",
+        "https://i.imgur.com/isBR9V8.mp4"
     ];
 
     // Select Random Message & Video
